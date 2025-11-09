@@ -1,0 +1,149 @@
+# ============================================
+# KOLDAVAR — Root Git Ignore
+# Covers all services under src/services/*
+# ============================================
+
+# -------------------------
+# Python / Flask / FastAPI
+# -------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Virtual environments & binaries
+**/bin/
+**/include/
+**/lib/
+**/lib64/
+**/pyvenv.cfg
+**/share
+
+# -------------------------
+# Virtual Environments
+# -------------------------
+.env
+.venv
+venv/
+env/
+ENV/
+src/services/**/.venv/
+src/services/**/env/
+src/services/**/ENV/
+
+# -------------------------
+# Build / Packaging
+# -------------------------
+build/
+dist/
+*.egg-info/
+.eggs/
+*.manifest
+*.spec
+
+# -------------------------
+# Logs & Cache
+# -------------------------
+*.log
+logs/
+log/
+*.out
+*.err
+*.pid
+.pytest_cache/
+.tox/
+.nox/
+.cache/
+__pycache__/
+
+# -------------------------
+# Coverage / Testing
+# -------------------------
+.coverage
+coverage.xml
+htmlcov/
+.hypothesis/
+nosetests.xml
+*.cover
+
+# -------------------------
+# IDE / Editor Files
+# -------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.old
+
+# -------------------------
+# System Files
+# -------------------------
+.DS_Store
+Thumbs.db
+
+# -------------------------
+# Audio / Generated Media
+# -------------------------
+*.wav
+*.mp3
+*.ogg
+*.flac
+*.aiff
+*.m4a
+*.aac
+
+# Generated media folders across all services
+src/services/**/output/
+src/services/**/audio_output/
+src/services/**/tts_output/
+src/services/**/narration_output/
+tmp/
+temp/
+
+# -------------------------
+# Service-specific Artifacts
+# -------------------------
+src/services/**/__pycache__/
+src/services/**/tmp/
+src/services/**/temp/
+src/services/**/files/
+src/services/**/models/
+src/services/**/checkpoints/
+src/services/**/tts_models/
+src/services/**/TTS/.models_cache/
+src/services/**/coqui_cache/
+
+# -------------------------
+# Environment & Configs
+# -------------------------
+*.env
+.env.*
+.env.local
+.env.*.local
+config_local.py
+instance/
+settings_local.py
+secrets.json
+
+# -------------------------
+# Docker / Deployment
+# -------------------------
+docker-compose.override.yml
+*.pid
+*.tar
+*.log
+*.sock
+.docker/
+Dockerfile.local
+.env.docker
+
+# -------------------------
+# Node / Frontend (if any)
+# -------------------------
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+build/
