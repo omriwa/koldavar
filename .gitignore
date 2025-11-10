@@ -23,7 +23,7 @@ __pycache__/
 # -------------------------
 # Virtual Environments
 # -------------------------
-.env
+# .env
 .venv
 venv/
 env/
