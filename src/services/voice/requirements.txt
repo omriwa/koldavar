@@ -1,0 +1,26 @@
+# ==========================================================
+# F5-TTS Base Environment (Stable CPU Setup)
+# ==========================================================
+
+# --- Core Web Framework ---
+Flask==3.0.3
+Flask-Cors==4.0.0
+python-dotenv==1.0.1
+
+# --- Core AI / Audio ---
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.4.1+cpu
+torchaudio==2.4.1+cpu
+
+# --- F5-TTS Engine ---
+git+https://github.com/SWivid/F5-TTS.git
+
+# --- Audio Processing ---
+pydub==0.25.1
+soundfile==0.12.1
+ffmpeg-python==0.2.0
+yt-dlp==2024.10.7
+
+# --- Utilities ---
+requests==2.32.3
+numpy==1.26.4

@@ -23,7 +23,6 @@ __pycache__/
 # -------------------------
 # Virtual Environments
 # -------------------------
-# .env
 .venv
 venv/
 env/
@@ -118,10 +117,6 @@ src/services/**/coqui_cache/
 # -------------------------
 # Environment & Configs
 # -------------------------
-*.env
-.env.*
-.env.local
-.env.*.local
 config_local.py
 instance/
 settings_local.py
@@ -147,3 +142,12 @@ npm-debug.log
 yarn-error.log
 dist/
 build/
+
+# Ignore model weights and caches
+/models/
+*/models/
+*.safetensors
+*.bin
+*.pt
+*.ckpt
+*.onnx
