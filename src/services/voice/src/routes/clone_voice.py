@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify, send_file
 import yt_dlp
 
 from modules.clone_voice import clone_voice
-from modules.logger import KoldavarLogger
+from modules.utils.logger import KoldavarLogger
 
 # Initialize blueprint and logger
 clone_bp = Blueprint("clone", __name__)

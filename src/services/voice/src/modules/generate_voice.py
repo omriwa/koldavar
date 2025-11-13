@@ -7,12 +7,12 @@ import numpy as np
 
 load_dotenv()
 
-HF_API_TOKEN = os.getenv("HF_API_TOKEN")
-if not HF_API_TOKEN:
-    raise RuntimeError("Missing HF_API_TOKEN in .env")
+HF_TOKEN = os.getenv("HF_TOKEN")
+if not HF_TOKEN:
+    raise RuntimeError("Missing HF_TOKEN in .env")
 
 API_URL = "https://api-inference.huggingface.co/models/suno/bark"
-HEADERS = {"Authorization": f"Bearer {HF_API_TOKEN}"}
+HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 GENERATED_DIR = BASE_DIR / "generated"

@@ -1,31 +1,33 @@
 #!/usr/bin/env bash
 # ==========================================================
-# setup.sh — Fully Automated Bark (Hugging Face API) Setup
+# setup.sh — Automated Setup for F5-TTS Voice Service
+# Uses existing .env and requirements.txt
 # ==========================================================
-set -e
+set -euo pipefail
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$BASE_DIR"
 
-echo "🚀  Starting full Bark environment setup..."
+echo "🚀  Starting F5-TTS environment setup in: $BASE_DIR"
+echo "=========================================================="
 
-# ---------- Detect or install Python ----------
+# ---------- Python Detection ----------
 PYTHON=$(command -v python3.12 || command -v python3.11 || command -v python3.10 || true)
 if [ -z "$PYTHON" ]; then
-  echo "⚙️  Installing Python 3.12 (via deadsnakes PPA)..."
+  echo "⚙️  Installing Python 3.12..."
   sudo apt update -y
   sudo apt install -y software-properties-common
-  sudo add-apt-repository ppa:deadsnakes/ppa -y
+  sudo add-apt-repository -y ppa:deadsnakes/ppa
   sudo apt update -y
   sudo apt install -y python3.12 python3.12-venv python3.12-dev
   PYTHON=$(command -v python3.12)
 fi
 echo "✅ Using $($PYTHON --version)"
 
-# ---------- Virtual environment ----------
+# ---------- Virtual Environment ----------
 if [ ! -d ".venv" ]; then
   echo "📦 Creating virtual environment..."
   $PYTHON -m venv .venv
 fi
-
-# Activate environment
 source .venv/bin/activate
 echo "✅ Virtual environment activated."
 
@@ -33,103 +35,110 @@ echo "✅ Virtual environment activated."
 echo "⬆️  Upgrading pip and build tools..."
 pip install --upgrade pip setuptools wheel >/dev/null
 
-# ---------- Auto-detect GPU ----------
+# ---------- GPU Detection ----------
 echo "🔍 Checking for GPU..."
 if command -v nvidia-smi >/dev/null 2>&1; then
   GPU_MODE=true
-  echo "💪 GPU detected — will install CUDA-compatible Torch build."
+  echo "💪 GPU detected — will install CUDA build."
 else
   GPU_MODE=false
   echo "⚙️ CPU-only mode detected."
 fi
 
-# ---------- Create default requirements if missing ----------
+# ---------- Requirements Check ----------
 if [ ! -f "requirements.txt" ]; then
-  echo "⚠️  No requirements.txt found — generating one..."
-  cat <<'REQ' > requirements.txt
-Flask==3.0.3
-Flask-Cors==4.0.0
-requests==2.32.3
-python-dotenv==1.0.1
-ffmpeg-python==0.2.0
-yt_dlp==2024.12.13
-torch==2.4.1+cpu
-torchaudio==2.4.1+cpu
-TTS==0.22.0
-transformers==4.46.0
-tokenizers==0.20.1
-REQ
+  echo "❌ requirements.txt not found! Please create it first."
+  exit 1
 fi
 
-# ---------- Install dependencies ----------
-echo "📥 Installing dependencies..."
+# ---------- Install PyTorch ----------
+echo "📥 Installing PyTorch..."
 if [ "$GPU_MODE" = true ]; then
-  pip install --no-cache-dir torch==2.4.1 torchaudio==2.4.1 \
-    --index-url https://download.pytorch.org/whl/cu121
+  pip install torch==2.9.0 torchaudio==2.9.0 --index-url https://download.pytorch.org/whl/cu121
 else
-  pip install --no-cache-dir torch==2.4.1+cpu torchaudio==2.4.1+cpu \
-    --index-url https://download.pytorch.org/whl/cpu
+  pip install torch==2.9.0+cpu torchaudio==2.9.0+cpu --index-url https://download.pytorch.org/whl/cpu
 fi
-pip install --no-cache-dir -r requirements.txt
 
-# ---------- Ensure ffmpeg exists ----------
+# ---------- Install Project Dependencies ----------
+echo "⚡ Installing Python dependencies..."
+pip install -r requirements.txt
+
+# ---------- FFmpeg ----------
 if ! command -v ffmpeg >/dev/null 2>&1; then
   echo "🎞 Installing FFmpeg..."
   sudo apt install -y ffmpeg
 fi
 
-# ---------- .env setup ----------
+# ---------- Verify .env ----------
 if [ ! -f ".env" ]; then
-  echo "🧾 Creating .env file..."
-  echo "HOST=0.0.0.0" > .env
-  echo "PORT=5000" >> .env
-  echo "DEBUG=True" >> .env
-  echo "TTS_ENGINE=huggingface-bark" >> .env
-  echo "TTS_MODEL=suno/bark" >> .env
+  echo "❌ .env file not found! Please provide it."
+  exit 1
 fi
 
-# Add or request Hugging Face token
-if ! grep -q "HF_API_TOKEN" .env 2>/dev/null; then
-  echo ""
-  echo "🔑 Please enter your Hugging Face API token (you can get one at https://huggingface.co/settings/tokens):"
-  read -p "HF_API_TOKEN: " HF_TOKEN
-  echo "HF_API_TOKEN=$HF_TOKEN" >> .env
+# Load .env into current shell
+set -a
+source .env
+set +a
+
+echo "✅ Loaded environment:"
+echo "   HF_HOME=$HF_HOME"
+echo "   F5_REPO_PATH=$F5_REPO_PATH"
+echo "   VOCODER_PATH=$VOCODER_PATH"
+
+# ---------- Hugging Face Authentication ----------
+if [ -n "${HF_TOKEN:-}" ]; then
+  echo "🔐 Authenticating with Hugging Face..."
+  huggingface-cli login --token "$HF_TOKEN" --add-to-git-credential --exists-ok || true
 else
-  echo "✅ Hugging Face token found in .env"
+  echo "⚠️  No HF_TOKEN found in .env — skipping login."
 fi
 
-# ---------- Verify environment ----------
-echo "🧪 Verifying core modules..."
+# ---------- Prepare Directories ----------
+mkdir -p "$HF_HOME" "$HF_HUB_CACHE" "$F5_REPO_PATH" "$VOCODER_PATH"
+mkdir -p models/github models/huggingface models/huggingface/hub
+
+# ---------- Verify Core Packages ----------
+echo "🧪 Verifying base modules..."
 python - <<'PYCODE'
-import flask, requests, os
-print(f"✅ Flask {flask.__version__} | Requests {requests.__version__}")
-token = os.getenv("HF_API_TOKEN")
-print("✅ HF_API_TOKEN found" if token else "⚠️  HF_API_TOKEN missing in environment")
+import flask, requests, torch, os
+print(f"✅ Flask {flask.__version__} | Requests {requests.__version__} | Torch {torch.__version__}")
+print("✅ HF_TOKEN present" if os.getenv("HF_TOKEN") else "⚠️  Missing HF_TOKEN")
 PYCODE
 
-set -euo pipefail
+# ---------- Download Vocoder if missing ----------
+if [ ! -f "$VOCODER_PATH/pytorch_model.bin" ]; then
+  echo "📦 Downloading vocoder model: charactr/vocos-mel-24khz"
+  huggingface-cli download charactr/vocos-mel-24khz \
+    --local-dir "$VOCODER_PATH" \
+    --include "*" \
+    --local-dir-use-symlinks False \
+    --resume-download
+else
+  echo "✅ Vocoder already available locally."
+fi
 
-BASE_DIR="$(dirname "$0")/.."
-MODEL_DIR="$BASE_DIR/models/huggingface/charactr__vocos-mel-24khz"
+# ---------- Verify F5-TTS checkpoints ----------
+F5_CKPT_DIR="$F5_REPO_PATH/ckpts/F5TTS_v1_Base"
+if [ ! -d "$F5_CKPT_DIR" ]; then
+  echo "⚠️  Missing F5-TTS checkpoints at: $F5_CKPT_DIR"
+  echo "→ Clone or copy safetensors manually before running offline."
+else
+  echo "✅ F5-TTS checkpoints found."
+fi
 
-echo "📦 Downloading F5-TTS model (charactr/vocos-mel-24khz)..."
-mkdir -p "$MODEL_DIR"
-
-huggingface-cli download charactr/vocos-mel-24khz \
-  --local-dir "$MODEL_DIR" \
-  --local-dir-use-symlinks False
-
-echo "✅ Model ready at: $MODEL_DIR"
-
-# ---------- Auto-start the Flask server ----------
-if [ -f "src/server.py" ]; then
-  echo "🚀 Launching Flask server..."
+# ---------- Launch Flask server ----------
+echo ""
+if [ -f "app.py" ]; then
+  echo "🚀 Launching Flask via app.py..."
+  python app.py
+elif [ -f "src/server.py" ]; then
+  echo "🚀 Launching Flask via src/server.py..."
   python src/server.py
 else
-  echo "⚠️  No server.py found in src/ — skipping run."
+  echo "⚠️  No Flask entrypoint found — setup complete but not started."
 fi
 
 echo ""
 echo "🎯 Setup complete!"
-echo "To activate the environment manually later, run:"
+echo "To activate later, run:"
 echo "    source .venv/bin/activate"

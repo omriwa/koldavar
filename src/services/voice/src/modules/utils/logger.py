@@ -1,7 +1,6 @@
 # modules/logger.py
 import logging
 import traceback
-from datetime import datetime
 from pathlib import Path
 
 class KoldavarLogger:

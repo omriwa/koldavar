@@ -1,82 +1,87 @@
-# modules/clone_voice.py
 import os
+import sys
 import tempfile
 import requests
 import numpy as np
 from pathlib import Path
 from pydub import AudioSegment
 import torch
-from f5_tts.api import F5TTS
-from modules.logger import KoldavarLogger
 
+# =====================================================
+# Load environment and setup
+# =====================================================
+from modules.utils.env_loader import config 
+from modules.utils.hf_manager import ensure_huggingface_ready
+from modules.utils.logger import KoldavarLogger
+from modules.utils.path import get_f5_ckpt_dir
+from modules.clone_voice_v2 import optimize_f5_for_cpu
+
+# Logging
 logger = KoldavarLogger(name="CloneVoice")
 
-# =====================================================
-# Configuration
-# =====================================================
+# Ensure Hugging Face environment & login
+ensure_huggingface_ready()
+
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-GENERATED_DIR = BASE_DIR / "generated"
-GENERATED_DIR.mkdir(exist_ok=True)
-
 logger.info("INIT-001", f"Initializing F5-TTS on {DEVICE}...")
 
-# single cached instance
-_f5_model: F5TTS | None = None
+# Add SWivid/F5-TTS local src path for import
+SRC_DIR = config.F5_REPO_PATH
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
+from f5_tts.api import F5TTS
 
+_f5_model = None
+
+# =====================================================
+# Model initialization
+# =====================================================
 def get_tts_model() -> F5TTS:
     global _f5_model
-    if _f5_model is None:
-        try:
-            # Root cache folder inside your project
-            hf_root = BASE_DIR / "models" / "huggingface"
-            hf_root.mkdir(parents=True, exist_ok=True)
+    if _f5_model is not None:
+        return _f5_model
 
-            # Tell HF/transformers/torch to cache there
-            os.environ["HF_HOME"] = str(hf_root)
-            os.environ["HF_HUB_CACHE"] = str(hf_root / "hub")
-            os.environ["TORCH_HOME"] = str(hf_root / "torch")
-            # ❌ do NOT set HF_HUB_OFFLINE / TRANSFORMERS_OFFLINE yet
+    ckpt_dir = get_f5_ckpt_dir()
+    if not ckpt_dir.exists():
+        raise FileNotFoundError(f"Checkpoint directory not found: {ckpt_dir}")
 
-            logger.info("MODEL-INIT", f"Loading F5-TTS model on {DEVICE} with cache at {hf_root}")
+    ckpt_files = sorted(ckpt_dir.glob("model_*.safetensors"))
+    if not ckpt_files:
+        raise FileNotFoundError(f"No F5-TTS checkpoint found in {ckpt_dir}")
 
-            _f5_model = F5TTS()  # this will trigger a one-time download into HF_HOME
-            logger.info("MODEL-READY", "✅ F5-TTS model successfully initialized.")
+    ckpt_path = ckpt_files[-1]
+    logger.info("MODEL-INIT", f"Found checkpoint: {ckpt_path}")
 
-        except Exception as e:
-            logger.error("MODEL-ERR", "Failed to initialize F5-TTS.", e)
-            raise
+    _f5_model = F5TTS(
+        model="F5TTS_v1_Base",
+        ckpt_file=str(ckpt_path),
+        device=DEVICE,
+    )
+
+    _f5_model = optimize_f5_for_cpu(_f5_model)
+
+    logger.info("MODEL-READY", f"✅ F5-TTS initialized from {ckpt_path}")
     return _f5_model
 
 
-
-
-
 # =====================================================
-# Helpers
+# Audio Helpers
 # =====================================================
 def _download_audio_to_temp(audio_url: str) -> str:
-    """Download or copy an audio file to a temporary .mp3 file."""
-    event_id = "DL-001"
-    logger.info(event_id, f"Fetching reference audio from {audio_url}")
-
-    # Handle local paths
+    logger.info("DL-001", f"Fetching reference audio from {audio_url}")
     if os.path.exists(audio_url):
-        logger.info("DL-LOCAL", f"Using existing local file {audio_url}")
+        logger.info("DL-LOCAL", f"Using existing local file: {audio_url}")
         return audio_url
 
-    # Handle file:// URIs
     if audio_url.startswith("file://"):
         local_path = audio_url[7:]
         if not os.path.exists(local_path):
             raise FileNotFoundError(f"Local file not found: {local_path}")
         return local_path
 
-    # Handle remote URLs
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:
-        resp = requests.get(audio_url, timeout=20)
+        resp = requests.get(audio_url, timeout=30)
         resp.raise_for_status()
         tmp.write(resp.content)
         tmp.flush()
@@ -85,7 +90,6 @@ def _download_audio_to_temp(audio_url: str) -> str:
 
 
 def _to_wav(mp3_path: str) -> str:
-    """Convert an mp3 to a temporary .wav file."""
     wav_tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
     wav_tmp.close()
     try:
@@ -99,7 +103,6 @@ def _to_wav(mp3_path: str) -> str:
 
 
 def _postprocess_audio(wav_path: Path, speed: float, pitch: float) -> Path:
-    """Apply pitch/speed adjustment and export as MP3."""
     mp3_path = wav_path.with_suffix(".mp3")
     try:
         audio = AudioSegment.from_wav(wav_path).set_frame_rate(22050)
@@ -122,30 +125,24 @@ def _postprocess_audio(wav_path: Path, speed: float, pitch: float) -> Path:
 # Core cloning function
 # =====================================================
 def clone_voice(text: str, audio_url: str, speed: float = 1.0, pitch: float = 1.0):
-    """
-    Clone a voice using F5-TTS zero-shot inference.
-    """
     logger.info("CLONE-001", f"Starting F5-TTS voice clone for URL: {audio_url}")
 
-    # 1️⃣ Load model
     model = get_tts_model()
-
-    # 2️⃣ Prepare reference audio
     ref_mp3 = _download_audio_to_temp(audio_url)
     ref_wav = _to_wav(ref_mp3)
-    wav_path = GENERATED_DIR / f"clone_{np.random.randint(1e6)}.wav"
+    wav_path = config.GENERATED_DIR / f"clone_{np.random.randint(1e6)}.wav"
 
     try:
         logger.info("CLONE-002", "Running F5-TTS inference...")
         _wav, _sr, _spec = model.infer(
             ref_file=ref_wav,
-            ref_text="",       # leave empty for automatic alignment
+            ref_text="",
             gen_text=text,
             file_wave=str(wav_path),
             file_spec=None,
             seed=None,
         )
-        logger.info("CLONE-003", f"Inference complete; output at {wav_path}")
+        logger.info("CLONE-003", f"Inference complete → {wav_path}")
     except Exception as e:
         logger.error("CLONE-ERR", "Model inference failed.", e)
         raise
