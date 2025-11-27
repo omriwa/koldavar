@@ -59,7 +59,6 @@ def get_tts_model() -> F5TTS:
         device=DEVICE,
     )
 
-    _f5_model = optimize_f5_for_cpu(_f5_model)
 
     logger.info("MODEL-READY", f"✅ F5-TTS initialized from {ckpt_path}")
     return _f5_model
