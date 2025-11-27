@@ -28,8 +28,6 @@ if [ ! -d ".venv" ]; then
   echo "📦 Creating virtual environment..."
   $PYTHON -m venv .venv
 fi
-source .venv/bin/activate
-echo "✅ Virtual environment activated."
 
 # ---------- Upgrade pip / wheel ----------
 echo "⬆️  Upgrading pip and build tools..."
@@ -45,31 +43,3 @@ fi
 # ---------- Install Project Dependencies ----------
 echo "⚡ Installing Python dependencies..."
 pip install -r requirements.txt
-
-# ---------- Verify .env ----------
-if [ ! -f ".env" ]; then
-  echo "❌ .env file not found! Please provide it."
-  exit 1
-fi
-
-# Load .env into current shell
-set -a
-source .env
-set +a
-
-# ---------- Launch Flask server ----------
-echo ""
-if [ -f "main.py" ]; then
-  echo "🚀 Launching Flask via main.py..."
-  python main.py
-elif [ -f "src/server.py" ]; then
-  echo "🚀 Launching Flask via src/server.py..."
-  python src/server.py
-else
-  echo "⚠️  No Flask entrypoint found — setup complete but not started."
-fi
-
-echo ""
-echo "🎯 Setup complete!"
-echo "To activate later, run:"
-echo "    source .venv/bin/activate"

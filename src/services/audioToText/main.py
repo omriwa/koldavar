@@ -29,7 +29,7 @@ def main():
     load_dotenv(dotenv_path=".env")
 
     # Read runtime settings
-    host = os.getenv("HOST", "0.0.0.0")
+    host = os.getenv("HOST", "localhost")
     port = int(os.getenv("PORT", 5000))
     debug = os.getenv("DEBUG", "True").lower() == "true"
 

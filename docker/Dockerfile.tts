@@ -1,0 +1,9 @@
+FROM python:3.12.12-slim-trixie
+
+EXPOSE 8084
+
+COPY /src/services/tts .
+
+RUN bash ./setup.sh
+
+CMD ["python","main.py"]

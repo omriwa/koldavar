@@ -1,0 +1,7 @@
+FROM golang:tip-alpine3.22
+
+EXPOSE 8083
+
+COPY /src/services/textSynthesizer .
+
+CMD ["go","run","main.go"]

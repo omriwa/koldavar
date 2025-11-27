@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html"
 	"log"
+	"net"
 	"net/http"
 	"os"
 
@@ -19,11 +20,18 @@ func main() {
 	}
 	port := os.Getenv("PORT")
 
-	log.Println("Starts server on", port)
-
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "sync manager, %q", html.EscapeString(r.URL.Path))
 	})
 
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	ln, err := net.Listen("tcp4", ":"+port)
+	if err != nil {
+		log.Fatalf("Failed to bind to IPv4 on port %s: %v", port, err)
+	}
+
+	log.Printf("Listening on 0.0.0.0:%s (IPv4 enforced)", port)
+
+	if err := http.Serve(ln, nil); err != nil {
+		log.Fatalf("Server error: %v", err)
+	}
 }

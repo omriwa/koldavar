@@ -1,0 +1,9 @@
+FROM python:3.12.12-slim-trixie
+
+EXPOSE 8080
+
+COPY /src/services/audioToText .
+
+RUN bash ./setup.sh
+
+CMD ["python","main.py"]

@@ -1,0 +1,49 @@
+services:
+  audioToText:
+    container_name: audioToText
+    image: koldavar/audio_to_text
+    build: 
+      dockerfile: ./docker/Dockerfile.audioToText
+      context: ../
+    
+    ports:
+      - "8080:8080"
+  
+  inputExtraction:
+    container_name: inputExtraction
+    image: koldavar/input_extraction
+    build: 
+      dockerfile: ./docker/Dockerfile.inputExtraction
+      context: ../
+    
+    ports:
+      - "8081:8081"
+
+  syncManager:
+    container_name: syncManager
+    image: koldavar/sync_manager
+    build: 
+      dockerfile: ./docker/Dockerfile.syncManager
+      context: ../
+    
+    ports:
+      - "8082:8082"
+  
+  textSynthesizer:
+    container_name: textSynthesizer
+    image: koldavar/text_synthesizer
+    build: 
+      dockerfile: ./docker/Dockerfile.textSynthesizer
+      context: ../
+    
+    ports:
+      - "8083:8083"
+  
+  # tts:
+  #   image: koldavar/tts
+  #   build: 
+  #     dockerfile: ./docker/Dockerfile.tts
+  #     context: ../
+    
+  #   ports:
+  #     - "8004:8004"
