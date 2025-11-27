@@ -1,0 +1,11 @@
+# ==========================================================
+# F5-TTS Base Environment (Stable CPU Setup)
+# ==========================================================
+
+# --- Core Web Framework ---
+Flask==3.0.3
+Flask-Cors==4.0.0
+python-dotenv==1.0.1
+
+# --- Utilities ---
+requests==2.32.3
