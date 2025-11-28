@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: audio_to_text
+  name: audio_to_text
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: audio_to_text
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: audio_to_text
+    spec:
+      imagePullSecrets:
+      - name: dockerhub-secret
+      containers:
+      - image: omriwallach/koldavar:audio_to_text
+        imagePullPolicy: Always
+        name: koldavar
+        resources: {}
+status: {}

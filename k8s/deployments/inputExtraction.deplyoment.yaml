@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: input_extraction
+  name: input_extraction
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: input_extraction
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: input_extraction
+    spec:
+      imagePullSecrets:
+      - name: dockerhub-secret
+      containers:
+      - image: omriwallach/koldavar:input_extraction
+        imagePullPolicy: Always
+        name: input_extraction
+        resources: {}
+status: {}

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: sync-manager
+  name: sync-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sync-manager
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: sync-manager
+    spec:
+      imagePullSecrets:
+      - name: dockerhub-secret
+      containers:
+      - image: omriwallach/koldavar:sync_manager
+        imagePullPolicy: Always
+        name: koldavar
+        resources: {}
+status: {}

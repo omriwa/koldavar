@@ -1,7 +1,7 @@
 services:
   audioToText:
     container_name: audioToText
-    image: koldavar/audio_to_text
+    image: omriwallach/koldavar:audio_to_text
     build: 
       dockerfile: ./docker/Dockerfile.audioToText
       context: ../
@@ -11,7 +11,7 @@ services:
   
   inputExtraction:
     container_name: inputExtraction
-    image: koldavar/input_extraction
+    image: omriwallach/koldavar:input_extraction
     build: 
       dockerfile: ./docker/Dockerfile.inputExtraction
       context: ../
@@ -21,7 +21,7 @@ services:
 
   syncManager:
     container_name: syncManager
-    image: koldavar/sync_manager
+    image: omriwallach/koldavar:sync_manager
     build: 
       dockerfile: ./docker/Dockerfile.syncManager
       context: ../
@@ -31,7 +31,7 @@ services:
   
   textSynthesizer:
     container_name: textSynthesizer
-    image: koldavar/text_synthesizer
+    image: omriwallach/koldavar:text_synthesizer
     build: 
       dockerfile: ./docker/Dockerfile.textSynthesizer
       context: ../
@@ -40,7 +40,7 @@ services:
       - "8083:8083"
   
   # tts:
-  #   image: koldavar/tts
+  #   image: omriwallach/koldavar:tts
   #   build: 
   #     dockerfile: ./docker/Dockerfile.tts
   #     context: ../

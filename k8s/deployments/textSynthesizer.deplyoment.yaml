@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: text_synthesizer
+  name: text_synthesizer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: text_synthesizer
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: text_synthesizer
+    spec:
+      imagePullSecrets:
+      - name: dockerhub-secret
+      containers:
+      - image: omriwallach/koldavar:text_synthesizer
+        imagePullPolicy: Always
+        name: koldavar
+        resources: {}
+status: {}
