@@ -27,9 +27,6 @@ def main():
 
     print("=== Connected ===")
 
-    # Ensure .ssh directory exists
-    run_remote(ssh, "mkdir -p /root/.ssh && chmod 700 /root/.ssh")
-
     print("Writing SSH config for GitHub...")
     ssh_config = """Host github.com
     HostName github.com
