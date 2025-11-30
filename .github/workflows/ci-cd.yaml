@@ -108,11 +108,11 @@ jobs:
           ssh root@${{ secrets.REMOTE_ADDRESS }} -i key -o StrictHostKeyChecking=no "echo 'SSH connection OK. Server hostname:' && hostname"
       
       - name: k8s-setup
-          run: |
-            echo "connect to remote via ssh"
-            GIT_SSH_COMMAND="ssh -i ~/.ssh/github/git_deploy -o IdentitiesOnly=yes"   git clone git@github.com:omriwa/koldavar.git && echo "cloned repo"
-            cd koldavar && kubectl apply -k ./base
-            echo "k8s finished"
+        run: |
+          echo "connect to remote via ssh"
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/github/git_deploy -o IdentitiesOnly=yes"   git clone git@github.com:omriwa/koldavar.git && echo "cloned repo"
+          cd koldavar && kubectl apply -k ./base
+          echo "k8s finished"
 
           
 
