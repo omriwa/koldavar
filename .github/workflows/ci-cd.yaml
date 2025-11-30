@@ -83,5 +83,5 @@ jobs:
       - name: Build and Push with Docker Compose
         env:
           BUILDX_BAKE_ENTITLEMENTS_FS: 0
-        run: docker buildx bake -f docker/docker-compose.yaml --push
+        run: docker buildx bake --allow=fs.read=.. -f docker/docker-compose.yaml --push
 
