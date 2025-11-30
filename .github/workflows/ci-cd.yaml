@@ -100,18 +100,17 @@ jobs:
       - docker-images
     
     steps:
-      - name: connect
+      - name: k8s-setup
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
         run: |
           echo "${{ secrets.REMOTE_PRIVATE_KEY }}" > key
           chmod 600 key
           echo "Trying to connect..."
           ssh root@${{ secrets.REMOTE_ADDRESS }} -i key -o StrictHostKeyChecking=no "echo 'SSH connection OK. Server hostname:' && hostname"
-      
-      - name: k8s-setup
-        run: |
-          echo "connect to remote via ssh"
+          
           GIT_SSH_COMMAND="ssh -i ~/.ssh/github/git_deploy -o IdentitiesOnly=yes"   git clone git@github.com:omriwa/koldavar.git && echo "cloned repo"
-          cd koldavar && pipeline/feat/init && kubectl apply -k ./base
+          cd koldavar && git checkout remotes/origin/${{BRANCH_NAME}} && kubectl apply -k ./k8s/base
           echo "k8s finished"
 
           
