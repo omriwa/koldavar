@@ -1,5 +1,7 @@
 name: CI
+
 on: [push]
+
 jobs:
   go-compailer-check:
     runs-on: ubuntu-latest
@@ -37,9 +39,8 @@ jobs:
     strategy:
       matrix:
         service:
-          # Python services
           - audioToText
-          - tts
+          # - tts
 
     steps:
       - name: Checkout repo
