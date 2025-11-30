@@ -5,11 +5,17 @@ on:
     workflows: ["CI"]
     types: [completed]
 
-jobs:    
+jobs:
   docker-images:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debug event payload
+        run: |
+          echo "Workflow Run Name: ${{ github.event.workflow_run.name }}"
+          echo "Workflow Run Conclusion: ${{ github.event.workflow_run.conclusion }}"
+          echo "Workflow Run Branch: ${{ github.event.workflow_run.head_branch }}"
+          
       - name: Checkout code
         uses: actions/checkout@v4
 
