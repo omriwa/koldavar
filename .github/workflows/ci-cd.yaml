@@ -3,7 +3,7 @@ name: CI
 on: push
 
 jobs:
-  go-compailer-check:
+  go-compiler-check:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -34,7 +34,7 @@ jobs:
       - name: Build service ${{ matrix.service }}
         run: bash ./scripts/check_go_services.sh ${{ matrix.service }}
 
-  python-compailer-check:
+  python-compiler-check:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -54,30 +54,18 @@ jobs:
       - name: Build service ${{ matrix.service }}
         run: bash ./scripts/check_python_services.sh ${{ matrix.service }}
 
-  all-checks:
+  compiler-checks:
     runs-on: ubuntu-latest
     needs:
       - go-compailer-check
       - python-compailer-check
     steps:
-      - run: echo "All checks passed"
+      - run: echo "All compiler checks passed"
         
   docker-images:
     runs-on: ubuntu-latest
-    if: ${{ github.event.all-checks.conclusion == 'success' }}
 
     steps:
-      - name: Debug event payload
-        run: |
-          echo "Workflow Run Name: ${{ github.event.workflow_run.name }}"
-          echo "Workflow Run Conclusion: ${{ github.event.workflow_run.conclusion }}"
-          echo "Workflow Run Branch: ${{ github.event.workflow_run.head_branch }}"
-
-      - name: Checkout code for EXACT commit
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
-
       - name: Checkout code
         uses: actions/checkout@v4
 
