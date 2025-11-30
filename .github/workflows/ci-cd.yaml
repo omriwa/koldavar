@@ -114,13 +114,12 @@ jobs:
 
               set -e
 
-              cat <<CONFIG > ~/.ssh/config
+              cat > .ssh/config <<CONFIG
               Host github.com
-                    HostName github.com
-                    User git
-                    IdentityFile ~/.ssh/github/git_deploy
-                    IdentitiesOnly yes
-                    StrictHostKeyChecking no
+                  HostName github.com
+                  User git
+                  IdentityFile /root/.ssh/github_deploy
+                  IdentitiesOnly yes
               CONFIG
 
               chmod 600 ~/.ssh/config
