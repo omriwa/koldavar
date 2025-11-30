@@ -57,13 +57,15 @@ jobs:
   compiler-checks:
     runs-on: ubuntu-latest
     needs:
-      - go-compailer-check
-      - python-compailer-check
+      - go-compiler-check
+      - python-compiler-check
     steps:
       - run: echo "All compiler checks passed"
         
   docker-images:
     runs-on: ubuntu-latest
+    needs:
+      - compiler-checks
 
     steps:
       - name: Checkout code
