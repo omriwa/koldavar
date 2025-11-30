@@ -3,25 +3,25 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: input_extraction
-  name: input_extraction
+    app: sync-manager
+  name: sync-manager
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: input_extraction
+      app: sync-manager
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: input_extraction
+        app: sync-manager
     spec:
       imagePullSecrets:
       - name: dockerhub-secret
       containers:
-      - image: omriwallach/koldavar:input_extraction
+      - image: omriwallach/koldavar:sync_manager
         imagePullPolicy: Always
-        name: input_extraction
+        name: sync-manager
         resources: {}
 status: {}

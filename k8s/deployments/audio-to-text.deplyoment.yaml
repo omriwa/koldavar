@@ -3,25 +3,25 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: sync-manager
-  name: sync-manager
+    app: audio-to-text
+  name: audio-to-text
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: sync-manager
+      app: audio-to-text
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: sync-manager
+        app: audio-to-text
     spec:
       imagePullSecrets:
       - name: dockerhub-secret
       containers:
-      - image: omriwallach/koldavar:sync_manager
+      - image: omriwallach/koldavar:audio_to_text
         imagePullPolicy: Always
-        name: koldavar
+        name: audio-to-text
         resources: {}
 status: {}

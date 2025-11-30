@@ -3,25 +3,25 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: text_synthesizer
-  name: text_synthesizer
+    app: text-synthesizer
+  name: text-synthesizer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: text_synthesizer
+      app: text-synthesizer
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: text_synthesizer
+        app: text-synthesizer
     spec:
       imagePullSecrets:
       - name: dockerhub-secret
       containers:
       - image: omriwallach/koldavar:text_synthesizer
         imagePullPolicy: Always
-        name: koldavar
+        name: text-synthesizer
         resources: {}
 status: {}
