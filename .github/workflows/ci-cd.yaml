@@ -107,26 +107,30 @@ jobs:
           echo "${{ secrets.REMOTE_PRIVATE_KEY }}" > key
           chmod 600 key
           echo "Trying to connect..."
-          ssh root@${{ secrets.REMOTE_ADDRESS }} -i key -o StrictHostKeyChecking=no "echo 'SSH connection OK. Server hostname:' && hostname" << 'EOF'
+          ssh root@${{ secrets.REMOTE_ADDRESS }} -i key -o StrictHostKeyChecking=no << 'EOF'
+              echo "=== Connected to remote ==="
+              hostname
+              whoami
 
-            set -e
+              set -e
 
-            # 2. Clone the repo on remote using the deploy key
-            GIT_SSH_COMMAND="ssh -i ~/.ssh/github/git_deploy -o IdentitiesOnly=yes" \
-            git clone git@github.com:omriwa/koldavar.git || echo "Repo exists"
+              echo "Cloning repo..."
+              GIT_SSH_COMMAND="ssh -i ~/.ssh/github/git_deploy -o IdentitiesOnly=yes" \
+                git clone git@github.com:omriwa/koldavar.git || echo "Repo already exists"
 
-            cd koldavar
+              cd koldavar
 
-            # 3. Checkout correct branch
-            git fetch origin
-            git checkout remotes/origin/${{ env.BRANCH_NAME }}
+              echo "Fetching latest..."
+              git fetch origin
 
-            # 4. Deploy to Kubernetes
-            kubectl apply -k ./k8s/base
+              echo "Checking out branch: ${{ env.BRANCH_NAME }}"
+              git checkout ${{ env.BRANCH_NAME }} || git checkout -b ${{ env.BRANCH_NAME }} origin/${{ env.BRANCH_NAME }}
 
-            echo "k8s finished"
+              echo "Applying Kubernetes manifests..."
+              kubectl apply -k ./k8s/base
 
-          EOF
+              echo "=== Deployment finished ==="
+            EOF
               
 
 
