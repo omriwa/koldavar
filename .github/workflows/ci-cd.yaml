@@ -94,27 +94,27 @@ jobs:
           cd docker
           docker buildx bake --allow=fs.read=.. -f docker-compose.yaml --push
 
-setup-on-remote:
-  runs-on: ubuntu-latest
-  needs: [docker-images]
+  setup-on-remote:
+    runs-on: ubuntu-latest
+    needs: [docker-images]
 
-  steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    - name: Install Python dependencies
-      run: pip install paramiko
+      - name: Install Python dependencies
+        run: pip install paramiko
 
-    - name: Prepare private key for remote
-      run: |
-        echo "${{ secrets.REMOTE_PRIVATE_KEY }}" > key
-        chmod 600 key
+      - name: Prepare private key for remote
+        run: |
+          echo "${{ secrets.REMOTE_PRIVATE_KEY }}" > key
+          chmod 600 key
 
-    - name: Copy deploy script into the repo directory
-      run: chmod +x scripts/deploy_remote.py
+      - name: Copy deploy script into the repo directory
+        run: chmod +x scripts/deploy_remote.py
 
-    - name: Run remote deployment
-      env:
-        REMOTE_ADDRESS: ${{ secrets.REMOTE_ADDRESS }}
-        BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-      run: python3 scripts/deploy_remote.py
+      - name: Run remote deployment
+        env:
+          REMOTE_ADDRESS: ${{ secrets.REMOTE_ADDRESS }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+        run: python3 scripts/deploy_remote.py
