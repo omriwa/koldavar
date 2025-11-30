@@ -9,7 +9,7 @@ fi
 
 SERVICE_NAME="$1"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SERVICE_PATH="$ROOT_DIR/src/service/$SERVICE_NAME"
+SERVICE_PATH="$ROOT_DIR/src/services/$SERVICE_NAME"
 
 if [ ! -d "$SERVICE_PATH" ]; then
   echo "❌ ERROR: Service not found: $SERVICE_PATH"
