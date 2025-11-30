@@ -94,53 +94,27 @@ jobs:
           cd docker
           docker buildx bake --allow=fs.read=.. -f docker-compose.yaml --push
 
-  setup-on-remote:
-    runs-on: ubuntu-latest
-    needs:
-      - docker-images
-    
-    steps:
-      - name: k8s-setup
-        env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
-        run: |
-          echo "${{ secrets.REMOTE_PRIVATE_KEY }}" > key
-          chmod 600 key
-          echo "Trying to connect..."
-          ssh root@${{ secrets.REMOTE_ADDRESS }} -i key -o StrictHostKeyChecking=no << 'EOF'
-              echo "=== Connected to remote ==="
-              hostname
-              whoami
+setup-on-remote:
+  runs-on: ubuntu-latest
+  needs: [docker-images]
 
-              set -e
+  steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-              echo "Writing GitHub SSH config..."
-cat << 'CONFIG' > /root/.ssh/config
-Host github.com
-  HostName github.com
-  User git
-  IdentityFile /root/.ssh/github_deploy
-  IdentitiesOnly yes
-CONFIG
+    - name: Install Python dependencies
+      run: pip install paramiko
 
-              chmod 600 ~/.ssh/config
+    - name: Prepare private key for remote
+      run: |
+        echo "${{ secrets.REMOTE_PRIVATE_KEY }}" > key
+        chmod 600 key
 
-              echo "Cloning repo..."
-              git clone git@github.com:omriwa/koldavar.git || echo "Repo already exists"
+    - name: Copy deploy script into the repo directory
+      run: chmod +x scripts/deploy_remote.py
 
-              cd koldavar
-
-              echo "Fetching latest..."
-              git fetch origin
-
-              echo "Checking out branch: ${{ env.BRANCH_NAME }}"
-              git checkout ${{ env.BRANCH_NAME }} || git checkout -b ${{ env.BRANCH_NAME }} origin/${{ env.BRANCH_NAME }}
-
-              echo "Applying Kubernetes manifests..."
-              kubectl apply -k ./k8s/base
-
-              echo "=== Deployment finished ==="
-            EOF
-              
-
-
+    - name: Run remote deployment
+      env:
+        REMOTE_ADDRESS: ${{ secrets.REMOTE_ADDRESS }}
+        BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+      run: python3 scripts/deploy_remote.py
