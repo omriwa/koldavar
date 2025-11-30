@@ -106,7 +106,7 @@ jobs:
           echo "Trying to connect..."
           echo "address - ${{ secrets.REMOTE_ADDRESS }}, key:"
           cat key
-          ssh root@${{ secrets.REMOTE_ADDRESS }} -i key "echo 'SSH connection OK. Server hostname:' && hostname"
+          ssh root@${{ secrets.REMOTE_ADDRESS }} -i key -o StrictHostKeyChecking=no "echo 'SSH connection OK. Server hostname:' && hostname"
           
 
 
