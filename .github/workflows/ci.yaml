@@ -31,3 +31,24 @@ jobs:
 
       - name: Build service ${{ matrix.service }}
         run: bash ./scripts/check_go_services.sh ${{ matrix.service }}
+
+  python-compailer-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          # Python services
+          - audioToText
+          - tts
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build service ${{ matrix.service }}
+        run: bash ./scripts/check_python_services.sh ${{ matrix.service }}
