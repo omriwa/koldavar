@@ -1,4 +1,4 @@
-name: Pipline
+name: CI
 on: [push]
 jobs:
   go-compailer-check:
