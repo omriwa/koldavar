@@ -114,9 +114,19 @@ jobs:
 
               set -e
 
+              cat <<CONFIG > ~/.ssh/config
+                Host github.com
+                    HostName github.com
+                    User git
+                    IdentityFile ~/.ssh/github/git_deploy
+                    IdentitiesOnly yes
+                    StrictHostKeyChecking no
+                CONFIG
+
+                chmod 600 ~/.ssh/config
+
               echo "Cloning repo..."
-              GIT_SSH_COMMAND="ssh -i ~/.ssh/github/git_deploy -o IdentitiesOnly=yes" \
-                git clone git@github.com:omriwa/koldavar.git || echo "Repo already exists"
+              git clone git@github.com:omriwa/koldavar.git || echo "Repo already exists"
 
               cd koldavar
 
