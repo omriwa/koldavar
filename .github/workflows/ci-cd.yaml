@@ -91,6 +91,7 @@ jobs:
         env:
           BUILDX_BAKE_ENTITLEMENTS_FS: 0
         run: |
-          cd koldavar
-          docker buildx bake --allow=fs.read=.. -f docker/docker-compose.yaml --push
+          cd docker
+          docker buildx bake --allow=fs.read=.. -f docker-compose.yaml --push
+
 
