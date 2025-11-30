@@ -15,7 +15,12 @@ jobs:
           echo "Workflow Run Name: ${{ github.event.workflow_run.name }}"
           echo "Workflow Run Conclusion: ${{ github.event.workflow_run.conclusion }}"
           echo "Workflow Run Branch: ${{ github.event.workflow_run.head_branch }}"
-          
+
+      - name: Checkout code for EXACT commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
       - name: Checkout code
         uses: actions/checkout@v4
 
