@@ -94,4 +94,18 @@ jobs:
           cd docker
           docker buildx bake --allow=fs.read=.. -f docker-compose.yaml --push
 
+  setup-on-remote:
+    runs-on: ubuntu-latest
+    needs:
+      - docker-images
+    
+    steps:
+      - name: connect
+        run: |
+          echo "${{ secrets.REMOTE_PRIVATE_KEY }}" > key
+          echo "Trying to connect..."
+
+          ssh root@${{ secrets.REMOTE_ADDRESS }} -i key "echo 'SSH connection OK. Server hostname:' && hostname"
+          
+
 
