@@ -104,7 +104,8 @@ jobs:
         run: |
           echo "${{ secrets.REMOTE_PRIVATE_KEY }}" > key
           echo "Trying to connect..."
-
+          echo "address - ${{ secrets.REMOTE_ADDRESS }}, key:"
+          cat key
           ssh root@${{ secrets.REMOTE_ADDRESS }} -i key "echo 'SSH connection OK. Server hostname:' && hostname"
           
 
