@@ -81,7 +81,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build and Push with Docker Compose
-        with:
+        env:
           BUILDX_BAKE_ENTITLEMENTS_FS: 0
         run: docker buildx bake -f docker/docker-compose.yaml --push
 
