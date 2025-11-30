@@ -1,6 +1,11 @@
 name: CD
 
-on: [push]
+on:
+  CI:
+    workflows:
+      - Validate
+    types:
+      - completed
 
 jobs:
   docker-images:
