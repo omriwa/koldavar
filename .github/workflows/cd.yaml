@@ -1,0 +1,15 @@
+name: Docker compose build and push
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Run docker compose
+        with:
+          compose-file: "./docker/docker-compose.yml"
+        run: docker compose build && docker compose push
