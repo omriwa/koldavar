@@ -103,6 +103,7 @@ jobs:
       - name: connect
         run: |
           echo "${{ secrets.REMOTE_PRIVATE_KEY }}" > key
+          chmod 600 key
           echo "Trying to connect..."
           echo "address - ${{ secrets.REMOTE_ADDRESS }}, key:"
           cat key
