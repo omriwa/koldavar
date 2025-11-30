@@ -111,7 +111,7 @@ jobs:
         run: |
           echo "connect to remote via ssh"
           GIT_SSH_COMMAND="ssh -i ~/.ssh/github/git_deploy -o IdentitiesOnly=yes"   git clone git@github.com:omriwa/koldavar.git && echo "cloned repo"
-          cd koldavar && kubectl apply -k ./base
+          cd koldavar && pipeline/feat/init && kubectl apply -k ./base
           echo "k8s finished"
 
           
