@@ -13,4 +13,4 @@ spec:
   selector:
     app: input-extraction
 status:
-  loadBalancer: {}input-extraction.service.yaml
+  loadBalancer: {}
