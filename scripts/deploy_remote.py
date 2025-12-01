@@ -8,17 +8,24 @@ BRANCH = os.environ["BRANCH_NAME"]
 PRIVATE_KEY_PATH = "key"
 REMOTE_DEPLOY_KEY = "/root/.ssh/github/git_deploy"
 
-def run_remote(ssh, cmd):
-    stdin, stdout, stderr = ssh.exec_command(cmd)
-    out = stdout.read().decode().strip()
-    err = stderr.read().decode().strip()
+def run_remote(ssh, command, fail_on_error=True):
+    stdin, stdout, stderr = ssh.exec_command(command)
+    exit_code = stdout.channel.recv_exit_status()
 
-    if out:
-        print("[REMOTE]", out)
-    if err:
-        print("[REMOTE STDERR]", err)
+    out = stdout.read().decode()
+    err = stderr.read().decode()
 
-    return stdout.channel.recv_exit_status()
+    if out.strip():
+        print("[REMOTE]", out.strip())
+    if err.strip():
+        print("[REMOTE STDERR]", err.strip())
+
+    if fail_on_error and exit_code != 0:
+        print(f"[ERROR] Remote command failed: {command}")
+        print(f"[ERROR] Exit code: {exit_code}")
+        sys.exit(exit_code)
+
+    return exit_code
 
 def load_private_key():
     """Load RSA or ED25519."""
@@ -71,7 +78,11 @@ def main():
 
     # 5. Apply to Kubernetes
     print("Applying Kubernetes manifests...")
-    run_remote(ssh, "cd koldavar && kubectl apply -k ./k8s/base")
+    run_remote(
+        ssh,
+        "cd koldavar && kubectl apply -k ./k8s/base",
+        fail_on_error=True
+    )
 
     print("=== Deployment complete ===")
     ssh.close()
