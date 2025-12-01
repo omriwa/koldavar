@@ -9,7 +9,7 @@ BRANCH = os.environ["BRANCH_NAME"]
 PRIVATE_KEY_PATH = "key"
 
 # Existing deploy key on remote
-REMOTE_DEPLOY_KEY = ".ssh/github/github_deploy"
+REMOTE_DEPLOY_KEY = ".ssh/github/git_deploy"
 
 
 def run_remote(ssh, command):
