@@ -5,25 +5,20 @@ import os
 REMOTE = os.environ["REMOTE_ADDRESS"]
 BRANCH = os.environ["BRANCH_NAME"]
 
-# The SSH key used to connect to the server
 PRIVATE_KEY_PATH = "key"
-
-# Existing deploy key on remote
 REMOTE_DEPLOY_KEY = "/root/.ssh/github/git_deploy"
 
+def run_remote(ssh, cmd):
+    stdin, stdout, stderr = ssh.exec_command(cmd)
+    out = stdout.read().decode().strip()
+    err = stderr.read().decode().strip()
 
-def run_remote(ssh, command):
-    stdin, stdout, stderr = ssh.exec_command(command)
-    out = stdout.read().decode()
-    err = stderr.read().decode()
-
-    if out.strip():
-        print("[REMOTE]", out.strip())
-    if err.strip():
-        print("[REMOTE STDERR]", err.strip())
+    if out:
+        print("[REMOTE]", out)
+    if err:
+        print("[REMOTE STDERR]", err)
 
     return stdout.channel.recv_exit_status()
-
 
 def load_private_key():
     """Load RSA or ED25519."""
@@ -32,11 +27,10 @@ def load_private_key():
     except paramiko.ssh_exception.SSHException:
         return paramiko.Ed25519Key.from_private_key_file(PRIVATE_KEY_PATH)
 
-
 def main():
     print("Connecting to remote:", REMOTE)
 
-    # 1. Connect to remote
+    # 1. Connect SSH
     pkey = load_private_key()
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -44,7 +38,7 @@ def main():
 
     print("=== Connected to remote ===")
 
-    # 2. Ensure SSH config points to existing deploy key
+    # 2. Write SSH config for GitHub
     print("Configuring SSH for GitHub...")
 
     ssh_config = f"""Host github.com
@@ -60,37 +54,27 @@ def main():
     )
 
     # 3. Ensure repo exists
-    print("Ensuring repository exists...")
+    print("Ensuring koldavar repo exists...")
+    run_remote(ssh, "test -d koldavar || git clone git@github.com:omriwa/koldavar.git")
+
+    # 4. Fetch and reset to origin
+    print("Fetching latest...")
+    run_remote(ssh, f"cd koldavar && git fetch origin")
+
+    print(f"Checking out and resetting branch: {BRANCH}")
     run_remote(
         ssh,
-        "test -d koldavar || git clone git@github.com:omriwa/koldavar.git"
+        f"cd koldavar && "
+        f"git checkout -B {BRANCH} origin/{BRANCH} && "
+        f"git reset --hard origin/{BRANCH}"
     )
 
-    # 4. Fetch changes
-    print("Fetching latest changes...")
-    run_remote(
-        ssh,
-        "cd koldavar && git fetch origin"
-    )
-
-    # 5. Checkout branch
-    print(f"Checking out branch: {BRANCH}")
-    run_remote(
-        ssh,
-        f"cd koldavar && git checkout {BRANCH} "
-        f"|| git checkout -b {BRANCH} origin/{BRANCH}"
-    )
-
-    # 6. Apply Kubernetes manifests
+    # 5. Apply to Kubernetes
     print("Applying Kubernetes manifests...")
-    run_remote(
-        ssh,
-        "cd koldavar && kubectl apply -k ./k8s/base"
-    )
+    run_remote(ssh, "cd koldavar && kubectl apply -k ./k8s/base")
 
     print("=== Deployment complete ===")
     ssh.close()
-
 
 if __name__ == "__main__":
     main()
