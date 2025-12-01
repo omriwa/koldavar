@@ -9,7 +9,7 @@ BRANCH = os.environ["BRANCH_NAME"]
 PRIVATE_KEY_PATH = "key"
 
 # Existing deploy key on remote
-REMOTE_DEPLOY_KEY = ".ssh/github/git_deploy"
+REMOTE_DEPLOY_KEY = "/root/.ssh/github/git_deploy"
 
 
 def run_remote(ssh, command):
@@ -56,7 +56,7 @@ def main():
 
     run_remote(
         ssh,
-        f"echo \"{ssh_config}\" > .ssh/config && chmod 600 .ssh/config"
+        f"echo \"{ssh_config}\" > /root/.ssh/config && chmod 600 /root/.ssh/config"
     )
 
     # 3. Ensure repo exists
