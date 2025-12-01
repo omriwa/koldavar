@@ -27,7 +27,14 @@ def main():
     print("Connecting to remote:", REMOTE)
 
     # Connect to server using private key
-    pkey = paramiko.RSAKey.from_private_key_file(PRIVATE_KEY_PATH)
+    # Auto-detect key type
+    try:
+        pkey = paramiko.RSAKey.from_private_key_file(PRIVATE_KEY_PATH)
+    except paramiko.ssh_exception.SSHException:
+        try:
+            pkey = paramiko.Ed25519Key.from_private_key_file(PRIVATE_KEY_PATH)
+        except:
+            raise
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(REMOTE, username="root", pkey=pkey)
