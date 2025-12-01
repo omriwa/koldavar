@@ -1,33 +1,18 @@
 #!/usr/bin/env python3
 import paramiko
 import os
-import sys
 
 REMOTE = os.environ["REMOTE_ADDRESS"]
 BRANCH = os.environ["BRANCH_NAME"]
-PRIVATE_KEY_PATH = "key"  # created earlier during workflow
 
+# The deploy key created in GitHub Actions as a secret
+LOCAL_DEPLOY_KEY = "deploy_key"
+REMOTE_DEPLOY_KEY = "./.ssh/github_deploy"
 
-def load_private_key(path: str):
-    """Automatically load correct key type: RSA, ED25519, or ECDSA."""
-    key_types = [
-        paramiko.RSAKey,
-        paramiko.Ed25519Key,
-        paramiko.ECDSAKey,
-    ]
-    for key_cls in key_types:
-        try:
-            return key_cls.from_private_key_file(path)
-        except Exception:
-            continue
-    raise Exception("❌ ERROR: Unsupported or invalid SSH private key format.")
-
+PRIVATE_KEY_PATH = "key"  # The private SSH key used to connect to the server
 
 def run_remote(ssh, command):
-    """Run a remote command and print output."""
-    print(f"\n[REMOTE] $ {command}")
     stdin, stdout, stderr = ssh.exec_command(command)
-
     out = stdout.read().decode()
     err = stderr.read().decode()
 
@@ -38,58 +23,64 @@ def run_remote(ssh, command):
 
     return stdout.channel.recv_exit_status()
 
-
 def main():
-    print(f"Connecting to remote server: {REMOTE}")
+    print("Connecting to remote:", REMOTE)
 
-    # Load key (auto-detect type)
-    pkey = load_private_key(PRIVATE_KEY_PATH)
-
-    # Connect
+    # Connect to server using private key
+    pkey = paramiko.RSAKey.from_private_key_file(PRIVATE_KEY_PATH)
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(REMOTE, username="root", pkey=pkey)
+
     print("=== Connected ===")
 
-    # Ensure SSH folder exists
+    # --- 1. Upload GitHub deploy key ---
+    print("Uploading GitHub deploy key to remote...")
+
+    # Create .ssh directory if missing
     run_remote(ssh, "mkdir -p /root/.ssh && chmod 700 /root/.ssh")
 
-    # Write GitHub SSH config
+    sftp = ssh.open_sftp()
+    sftp.put(LOCAL_DEPLOY_KEY, REMOTE_DEPLOY_KEY)
+    sftp.chmod(REMOTE_DEPLOY_KEY, 0o600)
+    sftp.close()
+
+    print("Deploy key uploaded to:", REMOTE_DEPLOY_KEY)
+
+    # --- 2. Write SSH config ---
     print("Writing GitHub SSH config...")
     ssh_config = """Host github.com
     HostName github.com
     User git
     IdentityFile /root/.ssh/github_deploy
     IdentitiesOnly yes
-"""
+    """
 
     run_remote(
         ssh,
         f"echo \"{ssh_config}\" > /root/.ssh/config && chmod 600 /root/.ssh/config"
     )
 
-    # Clone repo if missing
-    print("Cloning or updating repo...")
+    # --- 3. Clone repo if missing ---
+    print("Cloning repository if missing...")
     run_remote(ssh, "test -d koldavar || git clone git@github.com:omriwa/koldavar.git")
 
-    # Fetch
-    print("Fetching latest changes...")
+    # --- 4. Fetch latest ---
+    print("Fetching latest...")
     run_remote(ssh, "cd koldavar && git fetch origin")
 
-    # Checkout branch
-    print(f"Checking out branch: {BRANCH}")
+    # --- 5. Checkout branch ---
+    print("Checking out branch:", BRANCH)
     run_remote(
         ssh,
-        f"cd koldavar && "
-        f"git checkout {BRANCH} || git checkout -b {BRANCH} origin/{BRANCH}"
+        f"cd koldavar && git checkout {BRANCH} || git checkout -b {BRANCH} origin/{BRANCH}"
     )
 
-    # Apply K8s manifests
+    # --- 6. Deploy ---
     print("Applying Kubernetes manifests...")
     run_remote(ssh, "cd koldavar && kubectl apply -k ./k8s/base")
 
-    print("\n=== Deployment Complete ===")
-
+    print("=== Deployment Complete ===")
     ssh.close()
 
 
