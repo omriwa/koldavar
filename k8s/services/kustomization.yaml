@@ -1,0 +1,5 @@
+resources:
+  - audio-to-text.service.yaml
+  - input-extraction.service.yaml
+  - sync-manager.service.yaml
+  - text-synthesizer.service.yaml
