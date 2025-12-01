@@ -107,7 +107,9 @@ jobs:
 
       - name: Prepare SSH key for Python script
         run: |
-          echo "${{ secrets.REMOTE_PRIVATE_KEY }}" > key
+          cat << 'EOF' > key
+          ${{ secrets.REMOTE_PRIVATE_KEY }}
+          EOF
           chmod 600 key
 
       - name: Copy deploy script into the repo directory
