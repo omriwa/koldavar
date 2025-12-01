@@ -7,7 +7,7 @@ BRANCH = os.environ["BRANCH_NAME"]
 
 # The deploy key created in GitHub Actions as a secret
 LOCAL_DEPLOY_KEY = "deploy_key"
-REMOTE_DEPLOY_KEY = "./.ssh/github_deploy"
+REMOTE_DEPLOY_KEY = ".ssh/github_deploy"
 
 PRIVATE_KEY_PATH = "key"  # The private SSH key used to connect to the server
 
