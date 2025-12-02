@@ -80,7 +80,7 @@ def main():
     print("Applying Kubernetes manifests...")
     run_remote(
         ssh,
-        "bash ./generate_k8s.sh",
+        "bash ./koldavar/scripts/generate_k8s.sh",
         fail_on_error=True
     )
 
