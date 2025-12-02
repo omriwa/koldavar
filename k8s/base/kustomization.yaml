@@ -2,3 +2,4 @@ resources:
   - ../deployments
   - ../secrets
   - ../services
+  - ../network

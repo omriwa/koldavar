@@ -3,3 +3,4 @@ resources:
 - input-extraction.deplyoment.yaml
 - sync-manager.deplyoment.yaml
 - text-synthesizer.deplyoment.yaml
+- redis.deployment.yaml

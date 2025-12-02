@@ -1,0 +1,5 @@
+resources:
+- audio-to-text.route.yaml
+# - input-extraction.route.yaml
+# - sync-manager.route.yaml
+# - text-synthesizer.route.yaml

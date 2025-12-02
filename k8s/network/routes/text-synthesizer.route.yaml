@@ -1,0 +1,18 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: text-synthesizer-route
+  namespace: default
+spec:
+  parentRefs:
+  - kind: Gateway
+    name: gateway
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /text-synthesizer
+    
+    backendRefs:
+    - name: text-synthesizer-service
+      port: 8083
