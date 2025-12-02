@@ -3,22 +3,22 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: redis
-  name: redis
+    app: {{ .Values.redis.name }}
+  name: {{ .Values.redis.name }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: redis
+      app: {{ .Values.redis.name }}
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: redis
+        app: {{ .Values.redis.name }}
     spec:
       containers:
-      - image: redis
-        name: redis
+      - image: {{ .Values.redis.image }}
+        name: {{ .Values.redis.name }}
         resources: {}
 status: {}

@@ -1,0 +1,43 @@
+global:
+  imagePullSecrets:
+    - name: dockerhub-secret
+
+services:
+  audioToText:
+    name: audio-to-text
+    enabled: true
+    image: "omriwallach/koldavar:audio_to_text"
+    pullPolicy: Always
+    port: 8080
+    replicas: 1
+
+  inputExtraction:
+    name: input-extraction
+    enabled: true
+    image: "omriwallach/koldavar:input_extraction"
+    pullPolicy: Always
+    port: 8081
+    replicas: 1
+
+  syncManager:
+    name: sync-manager
+    enabled: true
+    image: "omriwallach/koldavar:sync_manager"
+    pullPolicy: Always
+    port: 8082
+    replicas: 1
+
+  textSynthesizer:
+    name: text-synthesizer
+    enabled: true
+    image: "omriwallach/koldavar:text_synthesizer"
+    pullPolicy: Always
+    port: 8083
+    replicas: 1
+
+redis:
+  name: redis
+  enabled: true
+  image: redis
+  port: 8085
+  targetPort: 6379

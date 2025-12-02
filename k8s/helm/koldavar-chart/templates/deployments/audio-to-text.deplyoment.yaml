@@ -1,0 +1,24 @@
+{{- if .Values.services.audioToText.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.audioToText.name }}
+spec:
+  replicas: {{ .Values.services.audioToText.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.audioToText.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.audioToText.name }}
+    spec:
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: {{ .Values.services.audioToText.name }}
+          image: {{ .Values.services.audioToText.image }}
+          imagePullPolicy: {{ .Values.services.audioToText.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.audioToText.port }}
+{{- end }}

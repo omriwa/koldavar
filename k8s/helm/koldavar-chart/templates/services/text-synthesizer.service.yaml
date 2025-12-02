@@ -1,0 +1,14 @@
+{{- if .Values.services.textSynthesizer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.textSynthesizer.name }}-service
+spec:
+  selector:
+    app: {{ .Values.services.textSynthesizer.name }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.services.textSynthesizer.port }}
+      targetPort: {{ .Values.services.textSynthesizer.port }}
+{{- end }}

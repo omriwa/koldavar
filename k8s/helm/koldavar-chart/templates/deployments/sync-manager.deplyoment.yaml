@@ -1,0 +1,24 @@
+{{- if .Values.services.syncManager.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.syncManager.name }}
+spec:
+  replicas: {{ .Values.services.syncManager.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.syncManager.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.syncManager.name }}
+    spec:
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: {{ .Values.services.syncManager.name }}
+          image: "{{ .Values.services.syncManager.image }}:{{ .Values.services.syncManager.tag }}"
+          imagePullPolicy: {{ .Values.services.syncManager.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.syncManager.port }}
+{{- end }}

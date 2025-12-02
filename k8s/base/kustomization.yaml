@@ -1,5 +1,8 @@
-resources:
-  - ../deployments
-  - ../secrets
-  - ../services
-  - ../network
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+  - name: koldavar-chart
+    path: ../helm/koldavar-chart
+    releaseName: koldavar
+    valuesFile: values.yaml

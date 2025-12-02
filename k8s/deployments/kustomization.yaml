@@ -1,6 +1,0 @@
-resources:
-- audio-to-text.deplyoment.yaml
-- input-extraction.deplyoment.yaml
-- sync-manager.deplyoment.yaml
-- text-synthesizer.deplyoment.yaml
-- redis.deployment.yaml
