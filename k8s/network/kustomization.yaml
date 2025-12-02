@@ -1,4 +1,5 @@
 resources:
 - ingress.yaml
+- ingressclass.yaml
 # - gateway.yaml
 # - routes
