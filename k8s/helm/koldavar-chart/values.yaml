@@ -1,6 +1,6 @@
 global:
-  imagePullSecrets:
-    - name: dockerhub-secret
+  dockerHubSecret:
+    name: dockerhub-secret
 
 services:
   audioToText:

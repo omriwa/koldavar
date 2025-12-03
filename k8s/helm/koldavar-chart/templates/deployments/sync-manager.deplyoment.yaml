@@ -13,8 +13,7 @@ spec:
       labels:
         app: {{ .Values.services.syncManager.name }}
     spec:
-      imagePullSecrets:
-        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+      imagePullSecrets: {{ .Values.global.dockerHubSecret.name }}
       containers:
         - name: {{ .Values.services.syncManager.name }}
           image: "{{ .Values.services.syncManager.image }}:{{ .Values.services.syncManager.tag }}"
