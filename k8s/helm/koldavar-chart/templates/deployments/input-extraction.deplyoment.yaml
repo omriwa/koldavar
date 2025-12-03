@@ -13,7 +13,8 @@ spec:
       labels:
         app: {{ .Values.services.inputExtraction.name }}
     spec:
-      imagePullSecrets: {{ .Values.global.dockerHubSecret.name }}
+      imagePullSecrets: 
+      - name: {{ .Values.global.dockerHubSecret.name }}
       containers:
         - name: {{ .Values.services.inputExtraction.name }}
           image: {{ .Values.services.inputExtraction.image }}

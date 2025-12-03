@@ -13,7 +13,8 @@ spec:
       labels:
         app: {{ .Values.services.syncManager.name }}
     spec:
-      imagePullSecrets: {{ .Values.global.dockerHubSecret.name }}
+      imagePullSecrets: 
+      - name: {{ .Values.global.dockerHubSecret.name }}
       containers:
         - name: {{ .Values.services.syncManager.name }}
           image: "{{ .Values.services.syncManager.image }}:{{ .Values.services.syncManager.tag }}"

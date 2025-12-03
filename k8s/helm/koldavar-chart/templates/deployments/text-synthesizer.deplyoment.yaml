@@ -13,7 +13,8 @@ spec:
       labels:
         app: {{ .Values.services.textSynthesizer.name }}
     spec:
-      imagePullSecrets: {{ .Values.global.dockerHubSecret.name }}
+      imagePullSecrets: 
+      - name: {{ .Values.global.dockerHubSecret.name }}
       containers:
         - name: {{ .Values.services.textSynthesizer.name }}
           image: {{ .Values.services.textSynthesizer.image }}

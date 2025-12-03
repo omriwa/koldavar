@@ -13,7 +13,8 @@ spec:
       labels:
         app: {{ .Values.services.audioToText.name }}
     spec:
-      imagePullSecrets: {{ .Values.global.dockerHubSecret.name }}
+      imagePullSecrets: 
+      - name: {{ .Values.global.dockerHubSecret.name }}
       containers:
         - name: {{ .Values.services.audioToText.name }}
           image: {{ .Values.services.audioToText.image }}
