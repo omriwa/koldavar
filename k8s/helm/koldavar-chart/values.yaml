@@ -41,3 +41,14 @@ redis:
   image: redis
   port: 8085
   targetPort: 6379
+
+
+nginxIngressController:
+  enabled: true
+
+  ingressClassResource:
+    name: nginx
+    enabled: true
+
+  controller:
+    ingressClass: nginx
