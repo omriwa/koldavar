@@ -25,5 +25,9 @@ appVersion: "1.16.0"
 
 dependencies:
   - name: nginx-ingress-controller
-    version: 11.1.4       # example — check latest on Bitnami
-    repository: "oci://registry-1.docker.io/bitnamicharts"
+    version: 11.6.0      # example, use a newer one from `helm search repo bitnami/nginx-ingress-controller`
+    repository: "https://charts.bitnami.com/bitnami"
+
+  - name: strimzi-kafka-operator
+    version: 0.42.0     # pick any version you want
+    repository: "https://strimzi.io/charts/"

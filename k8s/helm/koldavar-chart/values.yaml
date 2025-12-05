@@ -1,6 +1,9 @@
 global:
   dockerHubSecret:
     name: dockerhub-secret
+  
+  security:
+    allowInsecureImages: true
 
 services:
   audioToText:
@@ -52,3 +55,39 @@ nginxIngressController:
 
   controller:
     ingressClass: nginx
+
+nginx-ingress-controller:
+  image:
+    registry: public.ecr.aws
+    repository: bitnami/nginx-ingress-controller
+    tag: "1.13.1-debian-12-r1"   # latest available
+    pullPolicy: IfNotPresent
+
+  defaultBackend:
+    image:
+      registry: public.ecr.aws
+      repository: bitnami/nginx
+      tag: "1.29.1-debian-12-r0"
+      pullPolicy: IfNotPresent
+
+kafka:
+  name: koldavar-kafka
+  version: 3.7.0
+  metadata:
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "5"
+    "meta.helm.sh/release-name": koldavar
+
+  replicas: 3
+  storageSize: 10Gi
+
+zookeeper:
+  replicas: 3
+  storageSize: 10Gi
+
+entityOperator:
+  enabled: true
+
+strimzi-kafka-operator:
+  installCRDs: false

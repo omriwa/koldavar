@@ -1,6 +1,9 @@
 dependencies:
 - name: nginx-ingress-controller
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 11.1.4
-digest: sha256:4f320c34c953c297192bbac81414208af8cf1b3260ca37182c77100fd7371ff5
-generated: "2025-12-03T15:05:10.954819302+01:00"
+  repository: https://charts.bitnami.com/bitnami
+  version: 11.6.0
+- name: strimzi-kafka-operator
+  repository: https://strimzi.io/charts/
+  version: 0.42.0
+digest: sha256:6fd0d2147072dcaf4ab45d293e4e126d1128359ff47948588a351ea89a3ab7d5
+generated: "2025-12-04T20:39:14.908327052+01:00"
