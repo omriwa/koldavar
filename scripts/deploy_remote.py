@@ -76,17 +76,18 @@ def main():
         f"git reset --hard origin/{BRANCH}"
     )
 
+    # 5. Apply to Kubernetes
+    print("Applying Kubernetes manifests with helm...")
+    run_remote(
+        ssh,
+        "cd koldavar/k8s/helm/koldavar-chart && helm dependency build && helm upgrade --install . -f values.yaml",
+        fail_on_error=True
+    )
+
     print("Installing dependencies")
     run_remote(
         ssh,
         "kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml",
-        fail_on_error=True
-    )
-    # 5. Apply to Kubernetes
-    print("Applying Kubernetes manifests...")
-    run_remote(
-        ssh,
-        "cd koldavar/k8s/helm/koldavar-chart && helm dependency build && helm upgrade --install . -f values.yaml",
         fail_on_error=True
     )
 
