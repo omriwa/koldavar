@@ -13,6 +13,10 @@ services:
     pullPolicy: Always
     port: 8080
     replicas: 1
+    # producers:
+    #   - *services.inputExtraction.name
+    # consumers:
+    #   - *services.textSynthesizer.name
 
   inputExtraction:
     name: input-extraction
@@ -21,6 +25,10 @@ services:
     pullPolicy: Always
     port: 8081
     replicas: 1
+    # producers: []
+    # consumers:
+    #   - *services.audioToText.name
+    #   - *services.textSynthesizer.name
 
   syncManager:
     name: sync-manager
@@ -37,6 +45,25 @@ services:
     pullPolicy: Always
     port: 8083
     replicas: 1
+    # producers:
+    #   - *services.inputExtraction.name
+    #   - *services.audioToText.name
+    #   - *services.textSynthesizer.name
+    # consumers:
+    #   - *services.tts.name
+    #   - *services.textSynthesizer.name
+  
+  tts:
+    name: tts
+    enabled: true
+    image: "omriwallach/koldavar:text_synthesizer"
+    pullPolicy: Always
+    port: 8083
+    replicas: 1
+    # producers:
+    #   - *services.inputExtraction.name
+    #   - *services.audioToText.name
+    # consumers: []
 
 redis:
   name: redis
@@ -45,40 +72,21 @@ redis:
   port: 8085
   targetPort: 6379
 
-
-nginxIngressController:
+traefik:
   enabled: true
+  providers:
+    kubernetesCRD:
+      enabled: true
+    kubernetesIngress:
+      enabled: false
 
-  ingressClassResource:
-    name: nginx
-    enabled: true
-
-  controller:
-    ingressClass: nginx
-
-nginx-ingress-controller:
-  image:
-    registry: public.ecr.aws
-    repository: bitnami/nginx-ingress-controller
-    tag: "1.13.1-debian-12-r1"   # latest available
-    pullPolicy: IfNotPresent
-
-  defaultBackend:
-    image:
-      registry: public.ecr.aws
-      repository: bitnami/nginx
-      tag: "1.29.1-debian-12-r0"
-      pullPolicy: IfNotPresent
+ingressClass:
+  name: traefik
 
 kafka:
   name: koldavar-kafka
+  namespace: kafka
   version: 3.7.0
-  metadata:
-  annotations:
-    "helm.sh/hook": post-install
-    "helm.sh/hook-weight": "5"
-    "meta.helm.sh/release-name": koldavar
-
   replicas: 3
   storageSize: 10Gi
 
@@ -89,5 +97,43 @@ zookeeper:
 entityOperator:
   enabled: true
 
-strimzi-kafka-operator:
-  installCRDs: false
+topics:
+  - name: audio.raw.extracted
+    partitions: 3
+    replicas: 3
+    retentionMs: 604800000  # 7 days
+
+  - name: text.synthesis.input
+    partitions: 3
+    replicas: 3
+    retentionMs: 604800000  # 7 days
+
+  - name: audio.synthesis.input
+    partitions: 3
+    replicas: 3
+    retentionMs: 604800000  # 7 days
+
+  - name: text.synthesis.output
+    partitions: 3
+    replicas: 3
+    retentionMs: 604800000  # 7 days
+
+  - name: audio.generated
+    partitions: 3
+    replicas: 3
+    retentionMs: 604800000  # 7 days
+
+  - name: dead-letter
+    partitions: 3
+    replicas: 3
+    retentionMs: 604800000  # 7 days
+
+  - name: pipeline-output
+    partitions: 3
+    replicas: 3
+    retentionMs: 604800000  # 7 days
+
+  - name: task-status
+    partitions: 3
+    replicas: 3
+    retentionMs: 604800000  # 7 days

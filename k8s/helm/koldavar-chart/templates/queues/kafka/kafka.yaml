@@ -1,32 +1,30 @@
-apiVersion: kafka.strimzi.io/v1beta3
-kind: Kafka
-metadata:
-  name: {{ .Values.kafka.name }}
-  annotations:
-    "helm.sh/hook": post-install
-    "helm.sh/hook-weight": "5"
-    "helm.sh/hook-delete-policy": before-hook-creation
-spec:
-  kafka:
-    version: {{ .Values.kafka.version }}
-    replicas: {{ .Values.kafka.replicas }}
-    listeners:
-      - name: plain
-        port: 9092
-        type: internal
-        tls: false
-    storage:
-      type: persistent-claim
-      size: {{ .Values.kafka.storageSize }}
-      deleteClaim: false
-
-  zookeeper:
-    replicas: {{ .Values.zookeeper.replicas }}
-    storage:
-      type: persistent-claim
-      size: {{ .Values.zookeeper.storageSize }}
-      deleteClaim: false
-
-  entityOperator:
-    topicOperator: {}
-    userOperator: {}
+# apiVersion: kafka.strimzi.io/v1beta2
+# kind: Kafka
+# metadata:
+#   name: {{ .Values.kafka.name }}
+#   namespace: {{ .Values.kafka.namespace }}
+#   annotations:
+#     "meta.helm.sh/release-name": {{ .Values.kafka.releaseName }}
+#     "meta.helm.sh/release-namespace": {{ .Values.kafka.releaseNamespace }}
+# spec:
+#   kafka:
+#     version: {{ .Values.kafka.version }}
+#     replicas: {{ .Values.kafka.replicas }}
+#     listeners:
+#       - name: plain
+#         port: 9092
+#         type: internal
+#         tls: false
+#         authentication:
+#           type: scram-sha-512
+#     storage:
+#       type: persistent-claim
+#       size: {{ .Values.kafka.storage }}
+#   zookeeper:
+#     replicas: {{ .Values.zookeeper.replicas }}
+#     storage:
+#       type: persistent-claim
+#       size: {{ .Values.zookeeper.storage }}
+#   entityOperator:
+#     topicOperator: {}
+#     userOperator: {}

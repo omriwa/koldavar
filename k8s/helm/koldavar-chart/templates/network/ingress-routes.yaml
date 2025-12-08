@@ -1,0 +1,17 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: koldavar-ingressroute
+  labels:
+    {{- include "koldavar.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - web
+  routes:
+    {{- range $key, $svc := .Values.services }}
+    - match: PathPrefix(`/{{ $svc.name }}`)
+      kind: Rule
+      services:
+        - name: {{ $svc.name }}-service
+          port: {{ $svc.port }}
+    {{- end }}

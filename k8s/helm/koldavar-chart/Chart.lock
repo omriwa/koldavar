@@ -1,9 +1,6 @@
 dependencies:
-- name: nginx-ingress-controller
-  repository: https://charts.bitnami.com/bitnami
-  version: 11.6.0
-- name: strimzi-kafka-operator
-  repository: https://strimzi.io/charts/
-  version: 0.42.0
-digest: sha256:6fd0d2147072dcaf4ab45d293e4e126d1128359ff47948588a351ea89a3ab7d5
-generated: "2025-12-04T20:39:14.908327052+01:00"
+- name: traefik
+  repository: https://helm.traefik.io/traefik
+  version: 23.0.1
+digest: sha256:644b5a9ab7b05baf14761c835f7ca92aae5e14e6fee71073130b25335b0cec8a
+generated: "2025-12-08T19:01:41.668391915+01:00"
