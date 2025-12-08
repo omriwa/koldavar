@@ -86,7 +86,7 @@ def main():
     print("Applying Kubernetes manifests...")
     run_remote(
         ssh,
-        "cd koldavar/k8s/helm/koldavar && helm dependency build && helm upgrade --install . -f values.yaml",
+        "cd koldavar/k8s/helm/koldavar-chart && helm dependency build && helm upgrade --install . -f values.yaml",
         fail_on_error=True
     )
 
