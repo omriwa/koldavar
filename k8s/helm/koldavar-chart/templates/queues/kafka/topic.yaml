@@ -1,16 +1,13 @@
 {{- $root := . }}
-{{- range $index, $topic := .Values.topics }}
+{{- range $topic := $root.Values.topics }}
 ---
-apiVersion: kafka.strimzi.io/v1
+apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
   name: {{ $topic.name }}
   namespace: {{ $root.Values.kafka.namespace }}
   labels:
     strimzi.io/cluster: {{ $root.Values.kafka.name }}
-  annotations:
-    meta.helm.sh/release-name: {{ $root.Values.kafka.releaseName }}
-    meta.helm.sh/release-namespace: {{ $root.Values.kafka.releaseNamespace }}
     app.kubernetes.io/managed-by: Helm
 spec:
   partitions: {{ $topic.partitions }}

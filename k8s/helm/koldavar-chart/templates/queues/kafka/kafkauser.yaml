@@ -1,18 +1,16 @@
-# {{- $root := . }}
-# {{- $users := list "consumer" "producer" }}
-# {{- range $type := $users }}
-# ---
-# apiVersion: kafka.strimzi.io/v1beta2
-# kind: KafkaUser
-# metadata:
-#   name: {{ $type }}-user
-#   namespace: {{ $root.Values.kafka.namespace }}
-#   labels:
-#     strimzi.io/cluster: {{ $root.Values.kafka.name }}
-#   annotations:
-#     "meta.helm.sh/release-name": {{ $root.Values.kafka.releaseName }}
-#     "meta.helm.sh/release-namespace": {{ $root.Values.kafka.releaseNamespace }}
-# spec:
-#   authentication:
-#     type: scram-sha-512
-# {{- end }}
+{{- $root := . }}
+{{- $users := list "consumer" "producer" }}
+{{- range $type := $users }}
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: {{ $type }}-user
+  namespace: {{ $root.Values.kafka.namespace }}
+  labels:
+    strimzi.io/cluster: {{ $root.Values.kafka.name }}
+    app.kubernetes.io/managed-by: Helm
+spec:
+  authentication:
+    type: scram-sha-512
+{{- end }}
