@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: redpanda-create-topics
+  name: redpanda-create-topics-{{ randAlphaNum 8 | lower }}
   namespace: {{ .Values.kafka.namespace }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
