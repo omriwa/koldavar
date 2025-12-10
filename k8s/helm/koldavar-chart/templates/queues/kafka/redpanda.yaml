@@ -1,0 +1,167 @@
+###
+### 1. STATIC PERSISTENT VOLUME (PV)
+###
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redpanda-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: local-path
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /mnt/redpanda/data
+  claimRef:
+    namespace: kafka
+    name: redpanda-data     # MUST match PVC below
+
+
+---
+###
+### 2. STATIC PERSISTENT VOLUME CLAIM (PVC)
+###
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redpanda-data
+  namespace: kafka
+spec:
+  storageClassName: local-path   # MUST match PV
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+
+---
+###
+### 3. HEADLESS SERVICE FOR STATEFULSET
+###
+apiVersion: v1
+kind: Service
+metadata:
+  name: redpanda
+  namespace: kafka
+spec:
+  clusterIP: None
+  selector:
+    app: redpanda
+  ports:
+    - name: kafka
+      port: 9092
+      targetPort: 9092
+    - name: admin
+      port: 9644
+      targetPort: 9644
+
+
+---
+###
+### 4. REDPANDA STATEFULSET (STATIC PVC, NO volumeClaimTemplates)
+###
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redpanda
+  namespace: kafka
+spec:
+  serviceName: redpanda
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redpanda
+  template:
+    metadata:
+      labels:
+        app: redpanda
+    spec:
+      initContainers:
+        - name: fix-permissions
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "Fixing volume permissions..."
+              mkdir -p /var/lib/redpanda/data
+              chown -R 101:101 /var/lib/redpanda/data
+              chmod -R 775 /var/lib/redpanda/data
+              echo "Permissions fixed."
+          volumeMounts:
+            - name: redpanda-storage
+              mountPath: /var/lib/redpanda/data
+
+      containers:
+        - name: redpanda
+          image: redpandadata/redpanda
+          command: ["/entrypoint.sh"]
+          args:
+            - redpanda
+            - start
+            - --overprovisioned
+            - --smp=1
+            - --memory=1G
+            - --reserve-memory=0M
+            - --kafka-addr=PLAINTEXT://0.0.0.0:9092
+            - --advertise-kafka-addr=PLAINTEXT://redpanda.kafka.svc.cluster.local:9092
+            - --pandaproxy-addr=0.0.0.0:8085
+          ports:
+            - containerPort: 9092
+            - containerPort: 9644
+
+          volumeMounts:
+            - name: redpanda-storage
+              mountPath: /var/lib/redpanda/data
+
+      volumes:
+        - name: redpanda-storage
+          persistentVolumeClaim:
+            claimName: redpanda-data
+
+
+---
+###
+### 5. TOPIC CREATION JOB
+###
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: redpanda-create-topics
+  namespace: kafka
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: create-topics
+          image: redpandadata/redpanda
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Waiting for Redpanda..."
+
+              BROKERS="redpanda.kafka.svc.cluster.local:9092"
+
+              for i in $(seq 1 30); do
+                rpk cluster info --brokers $BROKERS >/dev/null 2>&1 && break
+                echo "Still waiting... ($i/30)"
+                sleep 2
+              done
+
+              echo "Creating topics..."
+
+              rpk topic create audio.raw.extracted --brokers $BROKERS || true
+              rpk topic create text.synthesis.input --brokers $BROKERS || true
+              rpk topic create audio.synthesis.input --brokers $BROKERS || true
+              rpk topic create text.synthesis.output --brokers $BROKERS || true
+              rpk topic create audio.generated --brokers $BROKERS || true
+              rpk topic create dead-letter --brokers $BROKERS || true
+              rpk topic create pipeline-output --brokers $BROKERS || true
+              rpk topic create task-status --brokers $BROKERS || true
+
+              echo "Topics created."

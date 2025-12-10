@@ -65,56 +65,31 @@ ingressClass:
   name: traefik
 
 kafka:
-  name: koldavar-kafka
   namespace: kafka
-  version: "4.1.1"
-  storage: 10Gi
-  
-zookeeper:
-  replicas: 3
-  storage: 10Gi
 
+  image:
+    repository: redpandadata/redpanda
+    tag: latest
 
-entityOperator:
-  enabled: true
+  storage:
+    path: /mnt/redpanda/data
+    size: 10Gi
+    storageClass: local-path
 
-topics:
-  - name: audio.raw.extracted
-    partitions: 3
-    replicas: 3
-    retentionMs: 604800000  # 7 days
+  redpanda:
+    replicas: 1
+    advertisedKafkaAddr: redpanda.kafka.svc.cluster.local:9092
+    smp: 1
+    memory: 1G
+    reserveMemory: 0M
+    pandaproxyPort: 8085
 
-  - name: text.synthesis.input
-    partitions: 3
-    replicas: 3
-    retentionMs: 604800000  # 7 days
-
-  - name: audio.synthesis.input
-    partitions: 3
-    replicas: 3
-    retentionMs: 604800000  # 7 days
-
-  - name: text.synthesis.output
-    partitions: 3
-    replicas: 3
-    retentionMs: 604800000  # 7 days
-
-  - name: audio.generated
-    partitions: 3
-    replicas: 3
-    retentionMs: 604800000  # 7 days
-
-  - name: dead-letter
-    partitions: 3
-    replicas: 3
-    retentionMs: 604800000  # 7 days
-
-  - name: pipeline-output
-    partitions: 3
-    replicas: 3
-    retentionMs: 604800000  # 7 days
-
-  - name: task-status
-    partitions: 3
-    replicas: 3
-    retentionMs: 604800000  # 7 days
+  topics:
+    - audio.raw.extracted
+    - text.synthesis.input
+    - audio.synthesis.input
+    - text.synthesis.output
+    - audio.generated
+    - dead-letter
+    - pipeline-output
+    - task-status
