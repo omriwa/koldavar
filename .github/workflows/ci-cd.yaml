@@ -121,7 +121,8 @@ jobs:
       - name: Run remote deployment
         env:
           REMOTE_ADDRESS: ${{ secrets.REMOTE_ADDRESS }}
-          BRANCH_NAME: ${{ github.base_ref }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          TARGET_BRANCH: ${{ github.base_ref }}
           PR_APPROVED: ${{ env.PR_APPROVED }}
-
+          
         run: python3 scripts/deploy_remote.py

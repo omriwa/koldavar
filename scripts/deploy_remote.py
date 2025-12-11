@@ -5,7 +5,7 @@ import sys
 
 REMOTE = os.environ["REMOTE_ADDRESS"]
 BRANCH = os.environ["BRANCH_NAME"]
-
+TARGET_BRANCH = os.environ["TARGET_BRANCH"]
 PRIVATE_KEY_PATH = "key"
 REMOTE_DEPLOY_KEY = "/root/.ssh/github/git_deploy"
 PR_APPROVED = os.environ.get("PR_APPROVED", "false").lower() == "true"
@@ -80,7 +80,7 @@ def main():
     # 5. Deployment mode selection
     print("Determining deployment mode...")
 
-    IS_STAGE = BRANCH in ["main", "master", "prod", "production"]
+    IS_STAGE = TARGET_BRANCH in ["main", "master", "prod", "production","dev"]
 
     if PR_APPROVED and IS_STAGE:
         print(">>> Merge detected – using HELM UPGRADE <<<")
