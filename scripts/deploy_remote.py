@@ -8,6 +8,7 @@ BRANCH = os.environ["BRANCH_NAME"]
 
 PRIVATE_KEY_PATH = "key"
 REMOTE_DEPLOY_KEY = "/root/.ssh/github/git_deploy"
+PR_APPROVED = os.environ.get("PR_APPROVED", "false").lower() == "true"
 
 def run_remote(ssh, command, fail_on_error=True):
     stdin, stdout, stderr = ssh.exec_command(command)
@@ -79,20 +80,19 @@ def main():
     # 5. Deployment mode selection
     print("Determining deployment mode...")
 
-    IS_MERGE = BRANCH in ["main", "master", "prod", "production"]
+    IS_STAGE = BRANCH in ["main", "master", "prod", "production"]
 
-    if IS_MERGE:
+    if PR_APPROVED and IS_STAGE:
         print(">>> Merge detected – using HELM UPGRADE <<<")
         deploy_cmd = (
-            "cd koldavar/k8s && "
-            "helm upgrade --install koldavar ./helm/koldavar "
-            "--namespace default --create-namespace"
+            "cd koldavar/k8s/helm/koldavar && "
+            "helm upgrade --install koldavar ."
         )
     else:
         print(">>> Non-merge – applying helm template via kubectl <<<")
         deploy_cmd = (
-            "cd koldavar/k8s && "
-            "helm template koldavar ./helm/koldavar | kubectl apply -f -"
+            "cd koldavar/k8s/helm/koldavar && "
+            "helm template koldavar . | kubectl apply -f -"
         )
 
     # 6. Execute deployment
