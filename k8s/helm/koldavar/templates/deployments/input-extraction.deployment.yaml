@@ -1,0 +1,24 @@
+{{- if .Values.services.inputExtraction.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.inputExtraction.name }}
+spec:
+  replicas: {{ .Values.services.inputExtraction.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.inputExtraction.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.inputExtraction.name }}
+    spec:
+      imagePullSecrets: 
+      - name: {{ .Values.global.dockerHubSecret.name }}
+      containers:
+        - name: {{ .Values.services.inputExtraction.name }}
+          image: {{ .Values.services.inputExtraction.image }}
+          imagePullPolicy: {{ .Values.services.inputExtraction.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.inputExtraction.port }}
+{{- end }}

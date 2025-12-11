@@ -1,0 +1,98 @@
+global:
+  dockerHubSecret:
+    name: dockerhub-secret
+  
+  security:
+    allowInsecureImages: true
+
+crds:
+  enabled: false
+
+services:
+  audioToText:
+    name: audio-to-text
+    enabled: true
+    image: "omriwallach/koldavar:audio_to_text"
+    pullPolicy: Always
+    port: 8080
+    replicas: 1
+
+  inputExtraction:
+    name: input-extraction
+    enabled: true
+    image: "omriwallach/koldavar:input_extraction"
+    pullPolicy: Always
+    port: 8081
+    replicas: 1
+
+  syncManager:
+    name: sync-manager
+    enabled: true
+    image: "omriwallach/koldavar:sync_manager"
+    pullPolicy: Always
+    port: 8082
+    replicas: 1
+
+  textSynthesizer:
+    name: text-synthesizer
+    enabled: true
+    image: "omriwallach/koldavar:text_synthesizer"
+    pullPolicy: Always
+    port: 8083
+    replicas: 1
+  
+  tts:
+    name: tts
+    enabled: true
+    image: "omriwallach/koldavar:text_synthesizer"
+    pullPolicy: Always
+    port: 8083
+    replicas: 1
+
+redis:
+  name: redis
+  enabled: true
+  image: redis
+  port: 8085
+  targetPort: 6379
+
+traefik:
+  enabled: true
+  providers:
+    kubernetesCRD:
+      enabled: true
+    kubernetesIngress:
+      enabled: false
+
+ingressClass:
+  name: traefik
+
+kafka:
+  namespace: kafka
+
+  image:
+    repository: redpandadata/redpanda
+    tag: latest
+
+  storage:
+    path: /mnt/redpanda/data
+    size: 10Gi
+    storageClass: local-path
+
+  redpanda:
+    replicas: 1
+    advertisedKafkaAddr: redpanda.kafka.svc.cluster.local:9092
+    smp: 1
+    memory: 1G
+    reserveMemory: 0M
+    pandaproxyPort: 8085
+
+  topics:
+    - audio.raw.extracted
+    - text.synthesis.input
+    - audio.synthesis.input
+    - text.synthesis.output
+    - audio.generated
+    - dead-letter
+    - pipeline-output
+    - task-status

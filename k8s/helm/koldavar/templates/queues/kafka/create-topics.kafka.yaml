@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: redpanda-create-topics-{{ randAlphaNum 8 | lower }}
+  namespace: {{ .Values.kafka.namespace }}
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 1
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: create-topics
+          image: "{{ .Values.kafka.image.repository }}:{{ .Values.kafka.image.tag }}"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Waiting for Redpanda..."
+              BROKERS="redpanda.{{ .Values.kafka.namespace }}.svc.cluster.local:9092"
+
+              for i in $(seq 1 30); do
+                rpk cluster info --brokers $BROKERS >/dev/null 2>&1 && break
+                echo "Still waiting... ($i/30)"
+                sleep 2
+              done
+
+              echo "Creating topics..."
+              {{- range .Values.kafka.topics }}
+              rpk topic create {{ . }} --brokers $BROKERS || true
+              {{- end }}
+
+              echo "All topics created."

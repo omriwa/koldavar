@@ -114,8 +114,15 @@ jobs:
       - name: Copy deploy script into the repo directory
         run: chmod +x scripts/deploy_remote.py
 
+      - name: Check if PR approved
+        id: approval
+        run: echo "PR_APPROVED=${{ github.event.review.state == 'approved' }}" >> $GITHUB_ENV
+
       - name: Run remote deployment
         env:
           REMOTE_ADDRESS: ${{ secrets.REMOTE_ADDRESS }}
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          TARGET_BRANCH: ${{ github.base_ref }}
+          PR_APPROVED: ${{ env.PR_APPROVED }}
+          
         run: python3 scripts/deploy_remote.py

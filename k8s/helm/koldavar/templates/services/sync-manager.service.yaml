@@ -1,0 +1,14 @@
+{{- if .Values.services.syncManager.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.syncManager.name }}-service
+spec:
+  selector:
+    app: {{ .Values.services.syncManager.name }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.services.syncManager.port }}
+      targetPort: {{ .Values.services.syncManager.port }}
+{{- end }}

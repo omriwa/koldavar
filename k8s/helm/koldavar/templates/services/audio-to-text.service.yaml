@@ -1,0 +1,15 @@
+{{- if .Values.services.audioToText.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.audioToText.name }}-service
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.services.audioToText.name }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.services.audioToText.port }}
+      targetPort: {{ .Values.services.audioToText.port }}
+{{- end }}

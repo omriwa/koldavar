@@ -1,0 +1,24 @@
+{{- if .Values.services.textSynthesizer.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.textSynthesizer.name }}
+spec:
+  replicas: {{ .Values.services.textSynthesizer.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.textSynthesizer.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.textSynthesizer.name }}
+    spec:
+      imagePullSecrets: 
+      - name: {{ .Values.global.dockerHubSecret.name }}
+      containers:
+        - name: {{ .Values.services.textSynthesizer.name }}
+          image: {{ .Values.services.textSynthesizer.image }}
+          imagePullPolicy: {{ .Values.services.textSynthesizer.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.textSynthesizer.port }}
+{{- end }}

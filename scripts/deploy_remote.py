@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import paramiko
 import os
+import sys
 
 REMOTE = os.environ["REMOTE_ADDRESS"]
 BRANCH = os.environ["BRANCH_NAME"]
-
+TARGET_BRANCH = os.environ["TARGET_BRANCH"]
 PRIVATE_KEY_PATH = "key"
 REMOTE_DEPLOY_KEY = "/root/.ssh/github/git_deploy"
+PR_APPROVED = os.environ.get("PR_APPROVED", "false").lower() == "true"
 
 def run_remote(ssh, command, fail_on_error=True):
     stdin, stdout, stderr = ssh.exec_command(command)
@@ -45,9 +47,8 @@ def main():
 
     print("=== Connected to remote ===")
 
-    # 2. Write SSH config for GitHub
+    # 2. Configure GitHub SSH key
     print("Configuring SSH for GitHub...")
-
     ssh_config = f"""Host github.com
     HostName github.com
     User git
@@ -64,7 +65,7 @@ def main():
     print("Ensuring koldavar repo exists...")
     run_remote(ssh, "test -d koldavar || git clone git@github.com:omriwa/koldavar.git")
 
-    # 4. Fetch and reset to origin
+    # 4. Fetch + reset to correct branch
     print("Fetching latest...")
     run_remote(ssh, f"cd koldavar && git fetch origin")
 
@@ -76,12 +77,32 @@ def main():
         f"git reset --hard origin/{BRANCH}"
     )
 
-    # 5. Apply to Kubernetes
-    print("Applying Kubernetes manifests...")
+    # 5. Deployment mode selection
+    print("Determining deployment mode...")
+
+    IS_STAGE = TARGET_BRANCH in ["main", "master", "prod", "production","dev"]
+
+    if PR_APPROVED and IS_STAGE:
+        print(">>> Merge detected – using HELM UPGRADE <<<")
+        deploy_cmd = (
+            "cd koldavar/k8s/helm/koldavar && "
+            "helm upgrade --install koldavar ."
+        )
+    else:
+        print(">>> Non-merge – applying helm template via kubectl <<<")
+        deploy_cmd = (
+            "cd koldavar/k8s/helm/koldavar && helm dependency build && "
+            "helm template koldavar . | kubectl apply -f -"
+        )
+
+    # 6. Execute deployment
+    run_remote(ssh, deploy_cmd, fail_on_error=True)
+
+    # 7. Dependencies (Traefik CRDs)
+    print("Installing Traefik CRDs…")
     run_remote(
         ssh,
-        "cd koldavar && kubectl apply -k ./k8s/base",
-        fail_on_error=True
+        "kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml"
     )
 
     print("=== Deployment complete ===")

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redpanda-pv
+spec:
+  capacity:
+    storage: {{ .Values.kafka.storage.size }}
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: {{ .Values.kafka.storage.storageClass }}
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: {{ .Values.kafka.storage.path }}
+  claimRef:
+    namespace: {{ .Values.kafka.namespace }}
+    name: redpanda-data

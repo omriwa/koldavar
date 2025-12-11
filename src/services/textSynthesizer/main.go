@@ -21,7 +21,7 @@ func main() {
 	port := os.Getenv("PORT")
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "sync manager, %q", html.EscapeString(r.URL.Path))
+		fmt.Fprintf(w, "text synthesizer, %q", html.EscapeString(r.URL.Path))
 	})
 
 	ln, err := net.Listen("tcp4", ":"+port)

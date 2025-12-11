@@ -3,25 +3,22 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: audio-to-text
-  name: audio-to-text
+    app: {{ .Values.redis.name }}
+  name: {{ .Values.redis.name }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: audio-to-text
+      app: {{ .Values.redis.name }}
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: audio-to-text
+        app: {{ .Values.redis.name }}
     spec:
-      imagePullSecrets:
-      - name: dockerhub-secret
       containers:
-      - image: omriwallach/koldavar:audio_to_text
-        imagePullPolicy: Always
-        name: audio-to-text
+      - image: {{ .Values.redis.image }}
+        name: {{ .Values.redis.name }}
         resources: {}
 status: {}

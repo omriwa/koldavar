@@ -1,0 +1,26 @@
+{{- if .Values.services.audioToText.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.audioToText.name }}
+spec:
+  replicas: {{ .Values.services.audioToText.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.audioToText.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.audioToText.name }}
+    spec:
+      imagePullSecrets: 
+      - name: {{ .Values.global.dockerHubSecret.name }}
+      containers:
+        - name: {{ .Values.services.audioToText.name }}
+          image: {{ .Values.services.audioToText.image }}
+          imagePullPolicy: {{ .Values.services.audioToText.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.audioToText.port }}
+          env:
+            
+{{- end }}
