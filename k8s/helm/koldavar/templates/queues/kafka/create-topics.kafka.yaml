@@ -3,10 +3,6 @@ kind: Job
 metadata:
   name: redpanda-create-topics-{{ randAlphaNum 8 | lower }}
   namespace: {{ .Values.kafka.namespace }}
-  annotations:
-    "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-weight": "5"
-    "helm.sh/hook-delete-policy": hook-succeeded,hook-failed
 spec:
   backoffLimit: 0
   ttlSecondsAfterFinished: 1
