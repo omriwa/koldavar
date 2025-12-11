@@ -2,8 +2,6 @@ apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: koldavar-ingressroute
-  labels:
-    {{- include "koldavar.labels" . | nindent 4 }}
 spec:
   entryPoints:
     - web
