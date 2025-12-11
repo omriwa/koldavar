@@ -1,6 +1,8 @@
 apiVersion: v2
 name: koldavar
 description: A Helm chart for Kubernetes
+annotations:
+  "helm.sh/resource-policy": keep
 
 # A chart can be either an 'application' or a 'library' chart.
 #
