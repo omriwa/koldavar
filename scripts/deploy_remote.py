@@ -91,7 +91,7 @@ def main():
     else:
         print(">>> Non-merge – applying helm template via kubectl <<<")
         deploy_cmd = (
-            "cd koldavar/k8s/helm/koldavar && "
+            "cd koldavar/k8s/helm/koldavar && helm dependency build && "
             "helm template koldavar . | kubectl apply -f -"
         )
 
