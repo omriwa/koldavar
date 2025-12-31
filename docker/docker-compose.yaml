@@ -1,43 +1,43 @@
 services:
-  audioToText:
-    container_name: audioToText
-    image: omriwallach/koldavar:audio_to_text
-    build: 
-      dockerfile: ./docker/Dockerfile.audioToText
-      context: ../
+  # audioToText:
+  #   container_name: audioToText
+  #   image: omriwallach/koldavar:audio_to_text
+  #   build: 
+  #     dockerfile: ./docker/Dockerfile.audioToText
+  #     context: ../
     
-    ports:
-      - "8080:8080"
+  #   ports:
+  #     - "8080:8080"
   
-  inputExtraction:
-    container_name: inputExtraction
-    image: omriwallach/koldavar:input_extraction
-    build: 
-      dockerfile: ./docker/Dockerfile.inputExtraction
-      context: ../
+  # inputExtraction:
+  #   container_name: inputExtraction
+  #   image: omriwallach/koldavar:input_extraction
+  #   build: 
+  #     dockerfile: ./docker/Dockerfile.inputExtraction
+  #     context: ../
     
-    ports:
-      - "8081:8081"
+  #   ports:
+  #     - "8081:8081"
 
-  syncManager:
-    container_name: syncManager
-    image: omriwallach/koldavar:sync_manager
-    build: 
-      dockerfile: ./docker/Dockerfile.syncManager
-      context: ../
+  # syncManager:
+  #   container_name: syncManager
+  #   image: omriwallach/koldavar:sync_manager
+  #   build: 
+  #     dockerfile: ./docker/Dockerfile.syncManager
+  #     context: ../
     
-    ports:
-      - "8082:8082"
+  #   ports:
+  #     - "8082:8082"
   
-  textSynthesizer:
-    container_name: textSynthesizer
-    image: omriwallach/koldavar:text_synthesizer
-    build: 
-      dockerfile: ./docker/Dockerfile.textSynthesizer
-      context: ../
+  # textSynthesizer:
+  #   container_name: textSynthesizer
+  #   image: omriwallach/koldavar:text_synthesizer
+  #   build: 
+  #     dockerfile: ./docker/Dockerfile.textSynthesizer
+  #     context: ../
     
-    ports:
-      - "8083:8083"
+  #   ports:
+  #     - "8083:8083"
   
   # tts:
   #   image: omriwallach/koldavar:tts
@@ -46,4 +46,14 @@ services:
   #     context: ../
     
   #   ports:
-  #     - "8004:8004"
+  #     - "8084:8084"
+
+  eventRouter:
+    container_name: eventRouter
+    image: omriwallach/koldavar:eventRouter
+    build: 
+      dockerfile: ./docker/Dockerfile.eventRouter
+      context: ../
+    
+    ports:
+      - "8085:8085"

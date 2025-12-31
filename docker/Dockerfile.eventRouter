@@ -1,0 +1,7 @@
+FROM golang:tip-alpine3.22
+
+EXPOSE 8081
+
+COPY /src/services/eventRouter .
+
+CMD ["go","run","main.go"]

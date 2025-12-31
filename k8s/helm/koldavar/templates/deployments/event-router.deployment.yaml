@@ -1,0 +1,35 @@
+{{- if .Values.services.eventRouter.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.services.eventRouter.name }}
+spec:
+  replicas: {{ .Values.services.eventRouter.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.services.eventRouter.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.services.eventRouter.name }}
+    spec:
+      imagePullSecrets: 
+      - name: {{ .Values.global.dockerHubSecret.name }}
+      containers:
+        - name: {{ .Values.services.eventRouter.name }}
+          image: {{ .Values.services.eventRouter.image }}
+          imagePullPolicy: {{ .Values.services.eventRouter.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.services.eventRouter.port }}
+          env:
+                        # --- KAFKA CONNECTIVITY ---
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: {{ .Values.kafka.redpanda.advertisedKafkaAddr }}
+
+          {{- range $topic := .Values.kafka.topics }}
+
+            - name: {{ regexReplaceAll "\\." (upper (regexReplaceAll "[^A-Za-z0-9]+" $topic "_")) "_" }}
+              value: {{ $topic }}
+
+          {{- end }}
+{{- end }}

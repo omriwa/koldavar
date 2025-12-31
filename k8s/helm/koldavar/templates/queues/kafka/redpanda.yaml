@@ -61,6 +61,22 @@ spec:
 
 
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redpanda-external
+  namespace: kafka
+spec:
+  type: NodePort
+  selector:
+    app: redpanda
+  ports:
+    - name: kafka
+      port: 9092
+      targetPort: 9092
+      nodePort: 31315
+
+---
 ###
 ### 4. REDPANDA STATEFULSET (STATIC PVC, NO volumeClaimTemplates)
 ###
@@ -107,8 +123,8 @@ spec:
             - --memory=1G
             - --reserve-memory=0M
             - --kafka-addr=PLAINTEXT://0.0.0.0:9092
-            - --advertise-kafka-addr=PLAINTEXT://redpanda.kafka.svc.cluster.local:9092
-            - --pandaproxy-addr=0.0.0.0:8085
+            - --advertise-kafka-addr=PLAINTEXT://192.168.49.2:31315
+            - --pandaproxy-addr=0.0.0.0:9999
           ports:
             - containerPort: 9092
             - containerPort: 9644

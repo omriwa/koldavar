@@ -43,11 +43,19 @@ services:
   
   tts:
     name: tts
-    enabled: true
-    image: "omriwallach/koldavar:text_synthesizer"
+    enabled: false
+    image: "omriwallach/koldavar:tts"
     pullPolicy: Always
-    port: 8083
+    port: 8084
     replicas: 1
+
+  eventRouter:
+    name: event-router
+    enabled: true
+    image: "omriwallach/koldavar:eventRouter"
+    pullPolicy: Always
+    port: 8085
+    replicas: 1 
 
 redis:
   name: redis

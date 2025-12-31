@@ -1,0 +1,14 @@
+{{- if .Values.services.eventRouter.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.services.eventRouter.name }}-service
+spec:
+  selector:
+    app: {{ .Values.services.eventRouter.name }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.services.eventRouter.port }}
+      targetPort: {{ .Values.services.eventRouter.port }}
+{{- end }}
