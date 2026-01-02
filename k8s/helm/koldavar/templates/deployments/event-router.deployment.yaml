@@ -22,10 +22,32 @@ spec:
           ports:
             - containerPort: {{ .Values.services.eventRouter.port }}
           env:
-                        # --- KAFKA CONNECTIVITY ---
-            - name: KAFKA_BOOTSTRAP_SERVERS
-              value: "{{ .Values.kafka.redpanda.advertisedKafkaAddr }}:{{ .Values.kafka.redpanda.port }}"
+            - name: SERVICE_NAME
+              value: {{ .Values.services.eventRouter.name | quote }}
 
-            - name: KAFKA_TOPICS
-              value: {{ join "," .Values.kafka.topics | quote }}
+            - name: HTTP_PORT
+              value: {{ .Values.services.eventRouter.port | quote }}
+
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: {{ printf "%s:%d" .Values.kafka.redpanda.advertisedKafkaAddr .Values.kafka.redpanda.port | quote }}
+
+            # ------------------------------------------------
+            # ROUTER TARGETS (DERIVED FROM SERVICE NAME + PORT)
+            # ------------------------------------------------
+            - name: ROUTER_BASEURL_INPUT_EXTRACTION
+              value: {{ printf "http://%s-service:%d" .Values.services.inputExtraction.name .Values.services.inputExtraction.port | quote }}
+
+            - name: ROUTER_BASEURL_AUDIO_TO_TEXT
+              value: {{ printf "http://%s-service:%d" .Values.services.audioToText.name .Values.services.audioToText.port | quote }}
+
+            - name: ROUTER_BASEURL_TEXT_SYNTHESIZER
+              value: {{ printf "http://%s-service:%d" .Values.services.textSynthesizer.name .Values.services.textSynthesizer.port | quote }}
+
+            - name: ROUTER_BASEURL_SYNC_MANAGER
+              value: {{ printf "http://%s-service:%d" .Values.services.syncManager.name .Values.services.syncManager.port | quote }}
+
+            {{- if .Values.services.tts.enabled }}
+            - name: ROUTER_BASEURL_TTS
+              value: {{ printf "http://%s-service:%d" .Values.services.tts.name .Values.services.tts.port | quote }}
+            {{- end }}
 {{- end }}

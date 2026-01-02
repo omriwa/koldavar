@@ -5,20 +5,9 @@ import (
 	"eventRouter/main/modules"
 	"log"
 	"net/http"
-	"os"
+	"sync"
 	"time"
 )
-
-// Single place to init the singleton once (per process)
-func getKafkaClient() (*modules.KafkaClient, error) {
-	servers := []string{os.Getenv("KAFKA_BOOTSTRAP_SERVERS")}
-
-	if len(servers) == 0 {
-		return nil, modules.ErrMissingKafkaBootstrap // create this error in modules
-	}
-
-	return modules.NewKafkaClient(servers)
-}
 
 type eventRouteResponse struct {
 	Status    string `json:"status"`
@@ -34,12 +23,24 @@ func writeJSON(w http.ResponseWriter, code int, resp eventRouteResponse) {
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
+var (
+	kafkaOnce sync.Once
+	kafkaCli  *modules.KafkaClient
+	kafkaErr  error
+)
+
+func getKafkaClient() (*modules.KafkaClient, error) {
+	kafkaOnce.Do(func() {
+		kafkaCli, kafkaErr = modules.NewKafkaClientFromEnv()
+	})
+	return kafkaCli, kafkaErr
+}
+
 func EventRouteHandler(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
-	// Method guard
 	if r.Method != http.MethodPost {
-		log.Printf("[ROUTE][EVENT][WARN] method_not_allowed method=%s path=%s\n", r.Method, r.URL.Path)
+		log.Printf("[ROUTE][EVENT][WARN] METHOD_NOT_ALLOWED METHOD=%s PATH=%s\n", r.Method, r.URL.Path)
 		writeJSON(w, http.StatusMethodNotAllowed, eventRouteResponse{
 			Status:    "error",
 			Error:     "method not allowed",
@@ -49,7 +50,7 @@ func EventRouteHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Body == nil {
-		log.Printf("[ROUTE][EVENT][ERROR] empty_body path=%s\n", r.URL.Path)
+		log.Printf("[ROUTE][EVENT][ERROR] EMPTY_BODY PATH=%s\n", r.URL.Path)
 		writeJSON(w, http.StatusBadRequest, eventRouteResponse{
 			Status:    "error",
 			Error:     "empty body",
@@ -58,12 +59,11 @@ func EventRouteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("[ROUTE][EVENT] request_received path=%s remote=%s\n", r.URL.Path, r.RemoteAddr)
+	log.Printf("[ROUTE][EVENT] REQUEST_RECEIVED PATH=%s REMOTE=%s\n", r.URL.Path, r.RemoteAddr)
 
-	// Parse + validate event
 	ev, err := modules.BuildEventFromHttp(r)
 	if err != nil {
-		log.Printf("[ROUTE][EVENT][ERROR] build_event_failed err=%v path=%s\n", err, r.URL.Path)
+		log.Printf("[ROUTE][EVENT][ERROR] BUILD_EVENT_FAILED ERR=%v PATH=%s\n", err, r.URL.Path)
 		writeJSON(w, http.StatusBadRequest, eventRouteResponse{
 			Status:    "error",
 			Error:     err.Error(),
@@ -72,25 +72,38 @@ func EventRouteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Kafka client (singleton)
 	kc, err := getKafkaClient()
 	if err != nil {
-		log.Printf("[ROUTE][EVENT][ERROR] kafka_client_init_failed err=%v\n", err)
+		msg := "kafka init failed"
+		if err == modules.ErrMissingKafkaBootstrap {
+			msg = "missing KAFKA_BOOTSTRAP_SERVERS"
+		}
+		log.Printf("[ROUTE][EVENT][ERROR] KAFKA_CLIENT_INIT_FAILED ERR=%v\n", err)
 		writeJSON(w, http.StatusInternalServerError, eventRouteResponse{
 			Status:    "error",
-			Error:     "kafka init failed",
+			Error:     msg,
 			Timestamp: time.Now().Format(time.RFC3339Nano),
 		})
 		return
 	}
 
-	// Produce (use your wrapper so it’s consistent)
-	log.Printf("[ROUTE][EVENT] producing id=%s topic=%s source=%s target=%s\n",
+	// Producer wrapper (decoupled)
+	if kc.Producer == nil {
+		log.Printf("[ROUTE][EVENT][ERROR] PRODUCER_NIL\n")
+		writeJSON(w, http.StatusInternalServerError, eventRouteResponse{
+			Status:    "error",
+			Error:     "kafka producer not initialized",
+			Timestamp: time.Now().Format(time.RFC3339Nano),
+		})
+		return
+	}
+
+	log.Printf("[ROUTE][EVENT] PRODUCING ID=%s TOPIC=%s SOURCE=%s TARGET=%s\n",
 		ev.Id, ev.Name, ev.Source, ev.Target,
 	)
 
-	if err := kc.SendTopic(ev); err != nil {
-		log.Printf("[ROUTE][EVENT][ERROR] produce_failed id=%s topic=%s err=%v\n", ev.Id, ev.Name, err)
+	if err := kc.Producer.SendEvent(ev); err != nil {
+		log.Printf("[ROUTE][EVENT][ERROR] PRODUCE_FAILED ID=%s TOPIC=%s ERR=%v\n", ev.Id, ev.Name, err)
 		writeJSON(w, http.StatusBadGateway, eventRouteResponse{
 			Status:    "error",
 			Error:     "kafka produce failed",
@@ -101,10 +114,10 @@ func EventRouteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Flush briefly so HTTP client gets a meaningful success (optional but useful for routers)
+	// Optional: improve UX; keep short.
 	kc.Producer.Flush(2000)
 
-	log.Printf("[ROUTE][EVENT] ok id=%s topic=%s latency_ms=%d\n",
+	log.Printf("[ROUTE][EVENT] OK ID=%s TOPIC=%s LATENCY_MS=%d\n",
 		ev.Id, ev.Name, time.Since(start).Milliseconds(),
 	)
 

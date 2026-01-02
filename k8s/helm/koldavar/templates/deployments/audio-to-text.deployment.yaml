@@ -21,6 +21,4 @@ spec:
           imagePullPolicy: {{ .Values.services.audioToText.pullPolicy }}
           ports:
             - containerPort: {{ .Values.services.audioToText.port }}
-          env:
-            
 {{- end }}
