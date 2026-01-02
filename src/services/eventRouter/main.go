@@ -1,9 +1,7 @@
 package main
 
 import (
-	"eventRouter/main/modules"
-	"fmt"
-	"html"
+	"eventRouter/main/routes"
 	"log"
 	"net"
 	"net/http"
@@ -20,19 +18,9 @@ func main() {
 		return
 	}
 	port := os.Getenv("PORT")
-	kafkaServers := []string{os.Getenv("KAFKA_BOOTSTRAP_SERVERS")}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("STARTING KAFKA ", kafkaServers)
-		_, err := modules.NewKafkaClient(kafkaServers)
-
-		modules.SmokeTestKafka(kafkaServers, "test-topic")
-
-		if err != nil {
-			log.Fatal("KAFKA CLIENT", err)
-		}
-
-		fmt.Fprintf(w, "event router, %q", html.EscapeString(r.URL.Path))
+		routes.EventRouteHandler(w, r)
 	})
 
 	ln, err := net.Listen("tcp4", ":"+port)

@@ -9,8 +9,11 @@ spec:
     app: redpanda
   ports:
     - name: kafka
-      port: 9092
-      targetPort: 9092
+      port: {{ .Values.kafka.redpanda.port }}
+      targetPort: kafka
     - name: admin
       port: 9644
-      targetPort: 9644
+      targetPort: admin
+    - name: pandaproxy
+      port: {{ .Values.kafka.redpanda.pandaproxyPort }}
+      targetPort: pandaproxy

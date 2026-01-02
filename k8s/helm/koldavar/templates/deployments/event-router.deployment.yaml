@@ -24,12 +24,8 @@ spec:
           env:
                         # --- KAFKA CONNECTIVITY ---
             - name: KAFKA_BOOTSTRAP_SERVERS
-              value: {{ .Values.kafka.redpanda.advertisedKafkaAddr }}
+              value: "{{ .Values.kafka.redpanda.advertisedKafkaAddr }}:{{ .Values.kafka.redpanda.port }}"
 
-          {{- range $topic := .Values.kafka.topics }}
-
-            - name: {{ regexReplaceAll "\\." (upper (regexReplaceAll "[^A-Za-z0-9]+" $topic "_")) "_" }}
-              value: {{ $topic }}
-
-          {{- end }}
+            - name: KAFKA_TOPICS
+              value: {{ join "," .Values.kafka.topics | quote }}
 {{- end }}

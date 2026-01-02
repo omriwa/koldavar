@@ -1,0 +1,16 @@
+{{- if .Values.kafka.redpanda.nodePort }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: redpanda-external
+  namespace: {{ .Values.kafka.namespace }}
+spec:
+  type: NodePort
+  selector:
+    app: redpanda
+  ports:
+    - name: kafka
+      port: {{ .Values.kafka.redpanda.port }}
+      targetPort: kafka
+      nodePort: {{ .Values.kafka.redpanda.nodePort }}
+{{- end }}

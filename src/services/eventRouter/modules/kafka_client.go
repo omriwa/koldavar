@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/google/uuid"
 )
 
 type KafkaClient struct {
@@ -45,11 +44,11 @@ func NewKafkaClient(servers []string) (*KafkaClient, error) {
 
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
 		"bootstrap.servers":        formattedServers,
-		"client.id":               "koldavarProducer",
-		"request.required.acks":   "all",
-		"enable.idempotence":      true,
+		"client.id":                "koldavarProducer",
+		"request.required.acks":    "all",
+		"enable.idempotence":       true,
 		"message.send.max.retries": 10,
-		"retry.backoff.ms":        200,
+		"retry.backoff.ms":         200,
 	})
 	if err != nil {
 		log.Printf("[KAFKA][ERROR] Failed to create producer: %s\n", err)
@@ -73,8 +72,8 @@ func NewKafkaClient(servers []string) (*KafkaClient, error) {
 	c, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers":  formattedServers,
 		"client.id":          "koldavarConsumer",
-		"group.id":           "koldavar",  // OK for normal running
-		"auto.offset.reset":  "earliest",  // good default
+		"group.id":           "koldavar", // OK for normal running
+		"auto.offset.reset":  "earliest", // good default
 		"enable.auto.commit": true,
 	})
 	if err != nil {
@@ -175,9 +174,4 @@ func SmokeTestKafka(servers []string, topic string) error {
 
 	log.Println("[KAFKA][SMOKE][WARN] no message received before timeout")
 	return nil
-}
-
-// Optional helper for a unique group id if you want it later (not required with Assign):
-func uniqueGroupID(prefix string) string {
-	return prefix + "-" + uuid.New().String()
 }

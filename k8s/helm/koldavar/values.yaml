@@ -89,17 +89,22 @@ kafka:
 
   redpanda:
     replicas: 1
-    advertisedKafkaAddr: redpanda.kafka.svc.cluster.local:9092
+    advertisedKafkaAddr: redpanda.kafka.svc.cluster.local
     smp: 1
     memory: 1G
     reserveMemory: 0M
-    pandaproxyPort: 8085
+    pandaproxyPort: 9999
+    port: 9092
+    nodePort: 31315
 
   topics:
+    - input.raw.extracted
     - audio.raw.extracted
     - text.synthesis.input
     - audio.synthesis.input
     - text.synthesis.output
+    - text.group.synthesis.input
+    - text.group.synthesis.output
     - audio.generated
     - dead-letter
     - pipeline-output
